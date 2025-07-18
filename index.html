@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kobo EPUB 處理器 - 系列索引生成工具</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .workflow-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .step {
+            padding: 40px;
+            border-bottom: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .step:last-child {
+            border-bottom: none;
+        }
+
+        .step.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .step.hidden {
+            display: none;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 20px;
+            font-size: 1.1rem;
+        }
+
+        .step-number.completed {
+            background: #10b981;
+        }
+
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .step-description {
+            color: #6b7280;
+            margin-left: 60px;
+            margin-bottom: 30px;
+        }
+
+        /* Step 1: File Selection */
+        .file-drop-zone {
+            border: 3px dashed #d1d5db;
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .file-drop-zone .icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #9ca3af;
+        }
+
+        .file-drop-zone h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #374151;
+        }
+
+        .file-drop-zone p {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 30px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .file-info h4 {
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .file-info p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .file-actions button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .file-actions button:hover {
+            background: #dc2626;
+        }
+
+        /* Step 2: Processing Options */
+        .options-grid {
+            display: grid;
+            gap: 30px;
+        }
+
+        .option-group {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .option-group h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .device-option {
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            background: white;
+        }
+
+        .device-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .device-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .device-option strong {
+            display: block;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .device-option small {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            accent-color: #667eea;
+        }
+
+        .checkbox-group label {
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-large {
+            padding: 20px 40px;
+            font-size: 1.1rem;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+        }
+
+        /* Step 4: Series Information */
+        .series-input {
+            margin-bottom: 30px;
+        }
+
+        .series-input label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .series-input input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .series-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .books-list {
+            margin-top: 30px;
+        }
+
+        .book-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .book-info {
+            flex: 1;
+        }
+
+        .book-info h4 {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .book-info p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .index-input {
+            width: 80px;
+        }
+
+        .index-input input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Step 5: Progress & Download */
+        .progress-container {
+            margin-bottom: 30px;
+        }
+
+        .progress-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .progress-status {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .download-links {
+            margin-top: 30px;
+        }
+
+        .download-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .download-info h4 {
+            color: #0c4a6e;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .download-info p {
+            color: #0369a1;
+            font-size: 0.9rem;
+        }
+
+        .btn-download {
+            background: #0ea5e9;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+
+        .btn-download:hover:not(:disabled) {
+            background: #0284c7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .step {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .device-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .book-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step.active {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Kobo Series Editor</h1>
+            <p>EPUB 系列索引生成 與 轉換成 KEPUB</p>
+        </div>
+
+        <div class="workflow-container">
+            <!-- Step 1: File Selection -->
+            <div class="step active" id="step1">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div class="step-title">選擇 EPUB 文件</div>
+                </div>
+                <div class="step-description">
+                    拖放您的 EPUB 文件到下方區域，或點擊選擇文件
+                </div>
+                
+                <div class="file-drop-zone" id="dropZone">
+                    <div class="icon">📁</div>
+                    <h3>拖放 EPUB 文件到這裡</h3>
+                    <p>或點擊選擇文件 • 支援多個文件同時處理</p>
+                    <input type="file" id="fileInput" class="file-input" multiple accept=".epub">
+                </div>
+
+                <div class="file-list" id="fileList"></div>
+            </div>
+
+            <!-- Step 2: Processing Options -->
+            <div class="step disabled" id="step2">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div class="step-title">處理選項</div>
+                </div>
+                <div class="step-description">
+                    選擇您的 Kobo 設備型號和處理選項
+                </div>
+
+                <div class="options-grid">
+                    <div class="option-group">
+                        <h4>🖼️ 封面圖片調整</h4>
+                        <p>選擇您的 Kobo 設備型號以自動調整封面圖片尺寸</p>
+                        <div class="device-grid" id="deviceGrid">
+                            <div class="device-option" data-resolution="skip">
+                                <strong>跳過</strong>
+                                <small>不調整圖片</small>
+                            </div>
+                            <div class="device-option" data-resolution="1072,1448">
+                                <strong>Clara HD/Clara 2E</strong>
+                                <small>1072×1448</small>
+                            </div>
+                            <div class="device-option" data-resolution="1264,1680">
+                                <strong>Libra H2O/Libra 2</strong>
+                                <small>1264×1680</small>
+                            </div>
+                            <div class="device-option" data-resolution="1440,1920">
+                                <strong>Forma/Sage</strong>
+                                <small>1440×1920</small>
+                            </div>
+                            <div class="device-option" data-resolution="1404,1872">
+                                <strong>Elipsa</strong>
+                                <small>1404×1872</small>
+                            </div>
+                            <div class="device-option" data-resolution="758,1024">
+                                <strong>Aura/Nia</strong>
+                                <small>758×1024</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <h4>📖 系列信息</h4>
+                        <p>為您的書籍添加系列名稱和索引，方便在 Kobo 中管理</p>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="addSeriesMetadata" checked>
+                            <label for="addSeriesMetadata">添加系列信息到書籍 Metadata</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Start Processing -->
+            <div class="step disabled" id="step3">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <div class="step-title">開始處理</div>
+                </div>
+                <div class="step-description">
+                    準備處理您的 EPUB 文件
+                </div>
+
+                <button class="btn btn-large" id="prepareBtn">
+                    🚀 準備轉換
+                </button>
+            </div>
+
+            <!-- Step 4: Series Information (Hidden initially) -->
+            <div class="step hidden" id="step4">
+                <div class="step-header">
+                    <div class="step-number">4</div>
+                    <div class="step-title">輸入系列信息</div>
+                </div>
+                <div class="step-description">
+                    為您的書籍設置系列名稱和索引
+                </div>
+
+                <div class="series-input">
+                    <label for="seriesName">系列名稱</label>
+                    <input type="text" id="seriesName" placeholder="例如：哈利波特系列">
+                </div>
+
+                <div class="books-list" id="booksList"></div>
+
+                <button class="btn btn-large btn-success" id="convertBtn">
+                    ⚡ 轉換為 KEPUB
+                </button>
+            </div>
+
+            <!-- Step 5: Progress & Download -->
+            <div class="step hidden" id="step5">
+                <div class="step-header">
+                    <div class="step-number">5</div>
+                    <div class="step-title">轉換進度</div>
+                </div>
+                <div class="step-description">
+                    正在處理您的文件...
+                </div>
+
+                <div class="progress-container" id="progressContainer"></div>
+                <div class="download-links" id="downloadLinks"></div>
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-content"><b>
+            <p>原始項目：<a href="https://github.com/pgaskin/kepubify/" target="_blank">Kepubify</a>，代碼源自<a href="https://kiro.dev/" target="_blank"> Kiro</a> 與 <a href="https://github.com/google-gemini/gemini-cli" target="_blank">Gemini-cli</a></p>
+            <p>僅供個人學習交流使用，禁作商業用途</b></p>
+        </b></div>
+    </div>
+
+    <style>
+    .footer {
+        text-align: center;
+        padding: 30px 20px;
+        color: white;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+    .footer-content {
+        display: inline-block;
+        text-align: left;
+    }
+    .footer a {
+        color: white;
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+    .footer a:hover {
+        opacity: 0.8;
+    }
+    .footer p {
+        margin-bottom: 5px;
+    }
+    .footer p:last-child {
+        margin-bottom: 0;
+    }
+    </style>
+
+    <!-- Load Kepubify scripts first -->
+    <script src="assets/kepubify-75cb720a.js"></script>
+    <script src="assets/kepubify_try-a8dd6c1f.js"></script>
+
+    <script>
+        // 全局變量
+        let selectedFiles = [];
+        let config = {
+            deviceResolution: null,
+            addSeriesMetadata: true
+        };
+        let kepubifyInstance = null;
+
+        // DOM 元素
+        const steps = {
+            step1: document.getElementById('step1'),
+            step2: document.getElementById('step2'),
+            step3: document.getElementById('step3'),
+            step4: document.getElementById('step4'),
+            step5: document.getElementById('step5')
+        };
+
+        const elements = {
+            dropZone: document.getElementById('dropZone'),
+            fileInput: document.getElementById('fileInput'),
+            fileList: document.getElementById('fileList'),
+            deviceGrid: document.getElementById('deviceGrid'),
+            addSeriesMetadata: document.getElementById('addSeriesMetadata'),
+            prepareBtn: document.getElementById('prepareBtn'),
+            seriesName: document.getElementById('seriesName'),
+            booksList: document.getElementById('booksList'),
+            convertBtn: document.getElementById('convertBtn'),
+            progressContainer: document.getElementById('progressContainer'),
+            downloadLinks: document.getElementById('downloadLinks')
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            log('系統初始化完成');
+            
+            // 檢查 Kepubify 載入狀態
+            setTimeout(checkKepubifyStatus, 1000);
+        });
+
+        function checkKepubifyStatus() {
+            log('檢查 Kepubify 載入狀態...');
+            
+            // 檢查各種可能的全局變量
+            const possibleNames = ['kepubify', 'kepubify_try'];
+            let foundKepubify = false;
+            
+            for (const name of possibleNames) {
+                if (typeof window[name] !== 'undefined') {
+                    log(`✓ 找到 ${name} 模組`);
+                    foundKepubify = true;
+                    
+                    // 檢查是否有 Kepubify 類別
+                    if (window[name].Kepubify) {
+                        log(`✓ ${name}.Kepubify 類別可用`);
+                        // 如果找到了，將其設置為標準名稱
+                        if (name !== 'kepubify_try') {
+                            window.kepubify_try = window[name];
+                        }
+                    }
+                }
+            }
+            
+            if (!foundKepubify) {
+                log('⚠️ 警告: 未找到任何 Kepubify 模組');
+                log('將僅提供 EPUB 處理功能，不包含 KEPUB 轉換');
+            }
+        }
+
+        function initializeEventListeners() {
+            // Step 1: File selection
+            elements.dropZone.addEventListener('click', () => elements.fileInput.click());
+            elements.dropZone.addEventListener('dragover', handleDragOver);
+            elements.dropZone.addEventListener('drop', handleDrop);
+            elements.dropZone.addEventListener('dragleave', handleDragLeave);
+            elements.fileInput.addEventListener('change', handleFileSelect);
+
+            // Step 2: Options
+            elements.deviceGrid.addEventListener('click', handleDeviceSelect);
+            elements.addSeriesMetadata.addEventListener('change', updateConfig);
+
+            // Step 3: Prepare
+            elements.prepareBtn.addEventListener('click', prepareForConversion);
+
+            // Step 4: Convert
+            elements.convertBtn.addEventListener('click', startConversion);
+        }
+
+        // Step 1: File handling
+        function handleDragOver(e) {
+            e.preventDefault();
+            elements.dropZone.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            elements.dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            elements.dropZone.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(file => file.name.endsWith('.epub'));
+            addFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files).filter(file => file.name.endsWith('.epub'));
+            addFiles(files);
+        }
+
+        function addFiles(files) {
+            selectedFiles = [...selectedFiles, ...files];
+            updateFileList();
+            enableStep2();
+            log(`已添加 ${files.length} 個文件，總計 ${selectedFiles.length} 個文件`);
+        }
+
+        function updateFileList() {
+            elements.fileList.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <h4>${file.name}</h4>
+                        <p>${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    <div class="file-actions">
+                        <button onclick="removeFile(${index})">移除</button>
+                    </div>
+                `;
+                elements.fileList.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+            if (selectedFiles.length === 0) {
+                disableStep2();
+            }
+            log(`已移除文件，剩餘 ${selectedFiles.length} 個文件`);
+        }
+
+        // Step 2: Options handling
+        function enableStep2() {
+            steps.step2.classList.remove('disabled');
+            steps.step2.classList.add('active');
+            markStepCompleted('step1');
+        }
+
+        function disableStep2() {
+            steps.step2.classList.add('disabled');
+            steps.step2.classList.remove('active');
+            disableStep3();
+        }
+
+        function handleDeviceSelect(e) {
+            const option = e.target.closest('.device-option');
+            if (!option) return;
+
+            document.querySelectorAll('.device-option').forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+
+            const resolution = option.dataset.resolution;
+            config.deviceResolution = resolution === 'skip' ? 'skip' : resolution.split(',').map(Number);
+            
+            enableStep3();
+            
+            const deviceName = option.querySelector('strong').textContent;
+            log(`已選擇設備: ${deviceName}`);
+        }
+
+        function updateConfig() {
+            config.addSeriesMetadata = elements.addSeriesMetadata.checked;
+            log(`系列信息功能: ${config.addSeriesMetadata ? '啟用' : '停用'}`);
+        }
+
+        function enableStep3() {
+            if (config.deviceResolution !== null) {
+                steps.step3.classList.remove('disabled');
+                steps.step3.classList.add('active');
+                markStepCompleted('step2');
+            }
+        }
+
+        // Step 3: Prepare for conversion
+        function prepareForConversion() {
+            updateConfig();
+            
+            if (config.addSeriesMetadata) {
+                showStep4();
+            } else {
+                showStep5();
+                startConversion();
+            }
+            
+            markStepCompleted('step3');
+        }
+
+        function showStep4() {
+            steps.step4.classList.remove('hidden');
+            steps.step4.classList.add('active');
+            generateBooksList();
+        }
+
+        function generateBooksList() {
+            elements.booksList.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const extractedIndex = extractSeriesIndexFromFilename(file.name);
+                
+                const bookItem = document.createElement('div');
+                bookItem.className = 'book-item';
+                bookItem.innerHTML = `
+                    <div class="book-info">
+                        <h4>${file.name}</h4>
+                        <p>${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    <div class="index-input">
+                        <input type="text" value="${extractedIndex}" 
+                               data-file-index="${index}" placeholder="索引">
+                    </div>
+                `;
+                elements.booksList.appendChild(bookItem);
+            });
+        }
+
+        function extractSeriesIndexFromFilename(filename) {
+            const match = filename.match(/\[(\d+(?:\.\d+)?)\]|\b(\d+(?:\.\d+)?)\b/);
+            if (match) {
+                const index = match[1] || match[2];
+                return parseFloat(index);
+            }
+            return 1;
+        }
+
+        // Step 4: Start conversion
+        function startConversion() {
+            showStep5();
+            markStepCompleted('step4');
+            processAllFiles();
+        }
+
+        function showStep5() {
+            steps.step5.classList.remove('hidden');
+            steps.step5.classList.add('active');
+        }
+
+        // Step 5: Processing
+        async function processAllFiles() {
+            elements.progressContainer.innerHTML = '';
+            elements.downloadLinks.innerHTML = '';
+            
+            log('開始處理所有文件...');
+            
+            // Initialize Kepubify if available
+            if (!kepubifyInstance && typeof window.kepubify_try !== 'undefined') {
+                try {
+                    await initializeKepubify();
+                } catch (error) {
+                    log('警告: Kepubify 初始化失敗，將跳過 KEPUB 轉換');
+                }
+            }
+            
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                await processFile(file, i);
+            }
+            
+            log('所有文件處理完成！');
+            markStepCompleted('step5');
+        }
+
+        async function processFile(file, index) {
+            const progressItem = createProgressItem(file.name, index);
+            
+            try {
+                updateProgress(progressItem, 10, '解析 EPUB 文件...');
+                const zip = await JSZip.loadAsync(file);
+                
+                updateProgress(progressItem, 20, '查找 OPF 文件...');
+                const opfPath = await findOpfPath(zip);
+                if (!opfPath) {
+                    throw new Error('找不到 OPF 文件');
+                }
+                
+                // Process cover images
+                if (config.deviceResolution && config.deviceResolution !== 'skip') {
+                    updateProgress(progressItem, 30, '處理封面圖片...');
+                    await processImages(zip, opfPath);
+                }
+                
+                // Apply Duokan fix (always applied)
+                updateProgress(progressItem, 50, '應用多看全屏設置...');
+                await addDuokanFullscreen(zip, opfPath);
+                
+                // Add series metadata
+                if (config.addSeriesMetadata) {
+                    updateProgress(progressItem, 60, '添加系列信息...');
+                    await addSeriesMetadata(zip, opfPath, file.name, index);
+                }
+                
+                updateProgress(progressItem, 80, '重新打包 EPUB...');
+                const processedEpubBlob = await zip.generateAsync({ type: "blob" });
+                
+                // Convert with Kepubify
+                let finalBlob = processedEpubBlob;
+                if (kepubifyInstance) {
+                    updateProgress(progressItem, 90, '轉換為 KEPUB...');
+                    try {
+                        finalBlob = await convertWithKepubify(processedEpubBlob);
+                    } catch (error) {
+                        log(`Kepubify 轉換失敗: ${error.message}，使用處理後的 EPUB`);
+                    }
+                }
+                
+                updateProgress(progressItem, 100, '完成');
+                
+                // Create download link
+                const fileName = kepubifyInstance 
+                    ? file.name.replace('.epub', '.kepub.epub')
+                    : file.name.replace('.epub', '_processed.epub');
+                    
+                createDownloadLink(finalBlob, fileName, file.name);
+                
+            } catch (error) {
+                updateProgress(progressItem, 0, `錯誤: ${error.message}`);
+                log(`處理 ${file.name} 時發生錯誤: ${error.message}`);
+            }
+        }
+
+        function createProgressItem(fileName, index) {
+            const progressItem = document.createElement('div');
+            progressItem.className = 'progress-item';
+            progressItem.innerHTML = `
+                <div class="progress-header">
+                    <div class="progress-title">${fileName}</div>
+                    <div class="progress-status">等待中...</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            `;
+            elements.progressContainer.appendChild(progressItem);
+            return progressItem;
+        }
+
+        function updateProgress(progressItem, percent, status) {
+            const statusElement = progressItem.querySelector('.progress-status');
+            const fillElement = progressItem.querySelector('.progress-fill');
+            
+            statusElement.textContent = status;
+            fillElement.style.width = `${percent}%`;
+            
+            if (percent === 100) {
+                fillElement.style.background = '#10b981';
+                statusElement.style.color = '#059669';
+            }
+        }
+
+        function createDownloadLink(blob, fileName, originalName) {
+            const downloadItem = document.createElement('div');
+            downloadItem.className = 'download-item';
+            downloadItem.innerHTML = `
+                <div class="download-info">
+                    <h4>${fileName}</h4>
+                    <p>源文件 ${originalName} </p>
+                </div>
+                <button class="btn btn-download" onclick="downloadBlob(this, '${fileName}')">
+                    📥 下載
+                </button>
+            `;
+            
+            // Store blob in button for download
+            const button = downloadItem.querySelector('button');
+            button._blob = blob;
+            
+            elements.downloadLinks.appendChild(downloadItem);
+        }
+
+        // Utility functions
+        function markStepCompleted(stepId) {
+            const stepNumber = steps[stepId].querySelector('.step-number');
+            stepNumber.classList.add('completed');
+            stepNumber.innerHTML = '✓';
+        }
+
+        function log(message) {
+            console.log(message);
+        }
+
+        // EPUB processing functions
+        async function findOpfPath(zip) {
+            try {
+                const containerFile = zip.file('META-INF/container.xml');
+                if (!containerFile) {
+                    throw new Error('找不到 container.xml');
+                }
+                
+                const containerXml = await containerFile.async('string');
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(containerXml, 'text/xml');
+                const rootfile = doc.querySelector('rootfile');
+                return rootfile ? rootfile.getAttribute('full-path') : null;
+            } catch (error) {
+                throw new Error('無法讀取 container.xml: ' + error.message);
+            }
+        }
+
+        async function processImages(zip, opfPath) {
+            try {
+                const opfFile = zip.file(opfPath);
+                if (!opfFile) {
+                    throw new Error('無法讀取 OPF 文件');
+                }
+                
+                const opfContent = await opfFile.async('string');
+                const parser = new DOMParser();
+                const opfDoc = parser.parseFromString(opfContent, 'text/xml');
+
+                const opfDir = opfPath.substring(0, opfPath.lastIndexOf('/') + 1);
+                const imageItems = opfDoc.querySelectorAll('item[media-type^="image/"]');
+
+                for (const item of imageItems) {
+                    const href = item.getAttribute('href');
+                    const imagePath = opfDir + href;
+                    const fileName = href.toLowerCase();
+                    
+                    if (fileName.includes('cover') || fileName.includes('bc')) {
+                        await resizeImage(zip, imagePath);
+                    }
+                }
+            } catch (error) {
+                log(`圖片處理錯誤: ${error.message}`);
+            }
+        }
+
+        async function resizeImage(zip, imagePath) {
+            try {
+                const imageFile = zip.file(imagePath);
+                if (!imageFile) return;
+
+                const imageBlob = await imageFile.async('blob');
+                const resizedBlob = await resizeImageWithCanvas(imageBlob, config.deviceResolution);
+                zip.file(imagePath, resizedBlob);
+            } catch (error) {
+                log(`調整圖片 ${imagePath} 大小時出錯: ${error.message}`);
+            }
+        }
+
+        function resizeImageWithCanvas(imageBlob, targetResolution) {
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+
+                img.onload = () => {
+                    try {
+                        const [targetWidth, targetHeight] = targetResolution;
+                        
+                        log(`原始圖片尺寸: ${img.width}x${img.height}`);
+                        log(`目標尺寸: ${targetWidth}x${targetHeight}`);
+                        
+                        // 設置畫布為目標尺寸
+                        canvas.width = targetWidth;
+                        canvas.height = targetHeight;
+                        
+                        // 清除畫布並設置白色背景
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, targetWidth, targetHeight);
+                        
+                        // 使用拉伸策略：直接將圖片拉伸到目標尺寸，不保持寬高比
+                        log(`使用拉伸策略：將圖片直接拉伸到目標尺寸`);
+                        log(`寬度縮放比例: ${(targetWidth / img.width).toFixed(3)}`);
+                        log(`高度縮放比例: ${(targetHeight / img.height).toFixed(3)}`);
+                        
+                        // 直接將圖片拉伸到整個畫布
+                        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+                        
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                log(`✓ 圖片拉伸完成: ${targetWidth}x${targetHeight}, 文件大小: ${(blob.size / 1024).toFixed(1)} KB`);
+                                resolve(blob);
+                            } else {
+                                reject(new Error('圖片轉換失敗'));
+                            }
+                        }, 'image/jpeg', 0.9);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+
+                img.onerror = () => reject(new Error('圖片載入失敗'));
+                img.src = URL.createObjectURL(imageBlob);
+            });
+        }
+
+        // 備用的縮放策略函數（如果需要不同的行為）
+        function resizeImageWithCanvasContain(imageBlob, targetResolution) {
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+
+                img.onload = () => {
+                    try {
+                        const [targetWidth, targetHeight] = targetResolution;
+                        
+                        // 設置畫布為目標尺寸
+                        canvas.width = targetWidth;
+                        canvas.height = targetHeight;
+                        
+                        // 清除畫布並設置白色背景
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, targetWidth, targetHeight);
+                        
+                        // 計算縮放參數 - "contain" 策略：保持寬高比，完整顯示圖片
+                        const scaleX = targetWidth / img.width;
+                        const scaleY = targetHeight / img.height;
+                        const scale = Math.min(scaleX, scaleY);
+                        
+                        const scaledWidth = img.width * scale;
+                        const scaledHeight = img.height * scale;
+                        
+                        // 計算居中位置
+                        const offsetX = (targetWidth - scaledWidth) / 2;
+                        const offsetY = (targetHeight - scaledHeight) / 2;
+                        
+                        log(`使用 contain 策略: ${scaledWidth.toFixed(0)}x${scaledHeight.toFixed(0)}`);
+                        
+                        // 繪製圖片（居中，完整顯示）
+                        ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+                        
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                log(`✓ 圖片處理完成 (contain): ${targetWidth}x${targetHeight}, 實際圖片: ${scaledWidth.toFixed(0)}x${scaledHeight.toFixed(0)}`);
+                                resolve(blob);
+                            } else {
+                                reject(new Error('圖片轉換失敗'));
+                            }
+                        }, 'image/jpeg', 0.9);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+
+                img.onerror = () => reject(new Error('圖片載入失敗'));
+                img.src = URL.createObjectURL(imageBlob);
+            });
+        }
+
+        async function addDuokanFullscreen(zip, opfPath) {
+            try {
+                const opfFile = zip.file(opfPath);
+                if (!opfFile) return;
+                
+                const opfContent = await opfFile.async('string');
+                const modifiedOpf = opfContent.replace(
+                    /(idref=".*?cover\.xhtml")/gi,
+                    '$1 properties="duokan-page-fullscreen"'
+                );
+                zip.file(opfPath, modifiedOpf);
+            } catch (error) {
+                log(`添加多看全屏設置時出錯: ${error.message}`);
+            }
+        }
+
+        async function addSeriesMetadata(zip, opfPath, fileName, fileIndex) {
+            try {
+                const opfFile = zip.file(opfPath);
+                if (!opfFile) return;
+                
+                const opfContent = await opfFile.async('string');
+                const seriesName = elements.seriesName.value || '未命名系列';
+                
+                // Get series index from input
+                const indexInput = document.querySelector(`input[data-file-index="${fileIndex}"]`);
+                const seriesIndex = indexInput ? indexInput.value || '1' : '1';
+
+                const seriesMetadata = `  <meta name="calibre:series" content="${seriesName}" />
+    <meta name="calibre:series_index" content="${seriesIndex}" />
+  </metadata>`;
+
+                const modifiedOpf = opfContent.replace(
+                    /(<\/metadata>)/,
+                    seriesMetadata
+                );
+
+                zip.file(opfPath, modifiedOpf);
+                log(`已添加系列信息: ${seriesName} #${seriesIndex}`);
+            } catch (error) {
+                log(`添加系列信息時出錯: ${error.message}`);
+            }
+        }
+
+        // Kepubify integration
+        async function initializeKepubify() {
+            try {
+                log('初始化 Kepubify...');
+                
+                // 檢查 kepubify_try 是否存在
+                if (typeof window.kepubify_try === 'undefined') {
+                    throw new Error('kepubify_try 模組未載入');
+                }
+                
+                if (typeof window.kepubify_try.Kepubify === 'undefined') {
+                    throw new Error('Kepubify 類別不存在');
+                }
+                
+                // 先檢查 WASM 文件是否可訪問
+                log('檢查 WASM 文件可訪問性...');
+                const wasmResponse = await fetch('assets/kepubify-f43a201d.wasm');
+                if (!wasmResponse.ok) {
+                    throw new Error(`WASM 文件載入失敗: HTTP ${wasmResponse.status}`);
+                }
+                log('✓ WASM 文件可訪問');
+                
+                kepubifyInstance = new window.kepubify_try.Kepubify();
+                
+                // 使用自定義的進度回調
+                await kepubifyInstance.init((loaded, total) => {
+                    if (total > 0) {
+                        const percent = (loaded / total) * 100;
+                        log(`載入 Kepubify WASM: ${percent.toFixed(1)}%`);
+                    }
+                });
+                
+                log('✓ Kepubify 初始化完成');
+            } catch (error) {
+                log(`Kepubify 初始化失敗: ${error.message}`);
+                
+                // 提供詳細的錯誤診斷
+                if (error.message.includes('network error')) {
+                    log('❌ 網絡錯誤：WASM 文件載入失敗（CORS 問題）');
+                    log('💡 解決方法：');
+                    log('   1. 使用 Python: python -m http.server 8000');
+                    log('   2. 使用 Node.js: npx http-server');
+                    log('   3. 使用 VS Code Live Server 擴展');
+                    log('   4. 然後訪問 http://localhost:8000');
+                    log('⚠️ 注意：直接打開 HTML 文件會導致 WASM 載入失敗');
+                } else if (error.message.includes('HTTP')) {
+                    log('❌ HTTP 錯誤：WASM 文件無法載入');
+                    log('💡 請確保 assets/kepubify-f43a201d.wasm 文件存在且可訪問');
+                }
+                
+                log('⚠️ 將跳過 Kepubify 轉換，僅進行 EPUB 處理');
+                kepubifyInstance = null;
+                // 不拋出錯誤，允許繼續處理
+            }
+        }
+
+        async function convertWithKepubify(epubBlob) {
+            if (!kepubifyInstance) {
+                log('Kepubify 不可用，跳過轉換');
+                return epubBlob;
+            }
+            
+            try {
+                const kepubifyConfig = new window.kepubify_try.KepubifyConfig();
+                return await kepubifyInstance.kepubify(epubBlob, { options: kepubifyConfig.options });
+            } catch (error) {
+                log(`Kepubify 轉換失敗: ${error.message}`);
+                return epubBlob;
+            }
+        }
+
+        function downloadBlob(button, fileName) {
+            try {
+                const blob = button._blob;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                log(`開始下載: ${fileName}`);
+            } catch (error) {
+                log(`下載失敗: ${error.message}`);
+            }
+        }
+
+        // Global functions for HTML onclick
+        window.removeFile = removeFile;
+        window.downloadBlob = downloadBlob;
+    </script>
+</body>
+</html>
