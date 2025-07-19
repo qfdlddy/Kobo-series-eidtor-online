@@ -1825,7 +1825,6 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             log(`開始下載: ${fileName}`);
-            showToast(`開始下載: ${fileName}`, 'info');
         } catch (error) {
             log(`下載失敗: ${error.message}`);
             showToast(`下載失敗: ${error.message}`, 'error');
