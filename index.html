@@ -13,12 +13,92 @@
             padding: 0;
         }
 
+        :root {
+            --bg-gradient-start: #f8f9fa;
+            --bg-gradient-end: #e9ecef;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-on-primary: white;
+            --bg-container: rgba(255, 255, 255, 0.7);
+            --container-border: 1px solid rgba(255, 255, 255, 0.9);
+            --backdrop-blur: blur(10px);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --border-color: #e5e7eb;
+            --bg-step-number: #667eea;
+            --bg-step-completed: #10b981;
+            --bg-dropzone: #f9fafb;
+            --bg-dropzone-hover: #f0f4ff;
+            --border-dropzone: #d1d5db;
+            --border-dropzone-hover: #667eea;
+            --bg-file-item: #f8fafc;
+            --border-file-item: #e2e8f0;
+            --bg-button-remove: #ef4444;
+            --bg-button-remove-hover: #dc2626;
+            --bg-option-group: rgba(255, 255, 255, 0.6);
+            --border-option-group: 1px solid rgba(255, 255, 255, 0.8);
+            --bg-device-option: rgba(255, 255, 255, 0.5);
+            --border-device-option: 1px solid rgba(255, 255, 255, 0.7);
+            --border-device-option-hover: #667eea;
+            --bg-device-option-selected: rgba(102, 126, 234, 0.3);
+            --accent-color: #667eea;
+            --btn-bg: #667eea;
+            --btn-bg-hover: #5a67d8;
+            --btn-bg-disabled: #9ca3af;
+            --btn-success-bg: #10b981;
+            --btn-success-bg-hover: #059669;
+            --input-border: #e2e8f0;
+            --input-border-focus: #667eea;
+            --bg-download-item: #f0f9ff;
+            --border-download-item: #bae6fd;
+            --text-download-item-header: #0c4a6e;
+            --text-download-item-p: #0369a1;
+            --btn-download-bg: #0ea5e9;
+            --btn-download-bg-hover: #0284c7;
+            --theme-toggle-bg: #e9ecef;
+            --theme-toggle-color: #1f2937;
+            --theme-toggle-bg-hover: #dee2e6;
+            --footer-text-color: #6b7280;
+            --hyperlink-footer-text-color: #6b7280;
+            --input-bg: rgba(0, 0, 0, 0.02);
+            --input-focus-glow: 0 0 0 2px rgba(102, 126, 234, 0.4);
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
-            color: #1f2937;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
             min-height: 100vh;
+            background-size: 400% 400%;
+            animation: background-animation 15s ease infinite;
+        }
+
+        @keyframes background-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--btn-bg-hover);
+            background-clip: padding-box;
         }
 
         .container {
@@ -30,7 +110,8 @@
         .header {
             text-align: center;
             margin-bottom: 40px;
-            color: white;
+            color: var(--text-primary);
+;
         }
 
         .header h1 {
@@ -38,6 +119,11 @@
             font-weight: 700;
             margin-bottom: 10px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            color: var(--footer-text-color);
+        }
+
+        .header h1 svg {
+            stroke: var(--text-primary);
         }
 
         .header p {
@@ -45,16 +131,59 @@
             opacity: 0.9;
         }
 
+        .theme-toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--theme-toggle-bg);
+            color: var(--theme-toggle-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--theme-toggle-bg-hover);
+            transform: scale(1.1);
+        }
+
         .workflow-container {
-            background: white;
+            background: var(--bg-container);
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
             overflow: hidden;
+            border: var(--container-border);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            position: relative;
+        }
+
+        .workflow-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.1), transparent 40%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .workflow-container:hover::before {
+            opacity: 1;
         }
 
         .step {
             padding: 40px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
 
@@ -80,8 +209,8 @@
         .step-number {
             width: 40px;
             height: 40px;
-            background: #667eea;
-            color: white;
+            background: var(--bg-step-number);
+            color: var(--text-on-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -92,54 +221,54 @@
         }
 
         .step-number.completed {
-            background: #10b981;
+            background: var(--bg-step-completed);
         }
 
         .step-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: #1f2937;
+            color: var(--text-primary);
         }
 
         .step-description {
-            color: #6b7280;
+            color: var(--text-secondary);
             margin-left: 60px;
             margin-bottom: 30px;
         }
 
         /* Step 1: File Selection */
         .file-drop-zone {
-            border: 3px dashed #d1d5db;
+            border: 3px dashed var(--border-dropzone);
             border-radius: 15px;
             padding: 60px 40px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: #f9fafb;
+            background: var(--bg-dropzone);
         }
 
         .file-drop-zone:hover,
         .file-drop-zone.dragover {
-            border-color: #667eea;
-            background: #f0f4ff;
+            border-color: var(--border-dropzone-hover);
+            background: var(--bg-dropzone-hover);
             transform: translateY(-2px);
         }
 
         .file-drop-zone .icon {
             font-size: 3rem;
             margin-bottom: 20px;
-            color: #9ca3af;
+            color: var(--text-primary);
         }
 
         .file-drop-zone h3 {
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 10px;
-            color: #374151;
+            color: var(--text-primary);
         }
 
         .file-drop-zone p {
-            color: #6b7280;
+            color: var(--text-secondary);
             font-size: 1rem;
         }
 
@@ -156,25 +285,37 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px 20px;
-            background: #f8fafc;
+            background: var(--bg-file-item);
             border-radius: 10px;
             margin-bottom: 10px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-file-item);
+            animation: file-item-enter 0.4s ease-out;
+        }
+
+        @keyframes file-item-enter {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .file-info h4 {
             font-weight: 500;
-            color: #1e293b;
+            color: var(--text-primary);
             margin-bottom: 5px;
         }
 
         .file-info p {
-            color: #64748b;
+            color: var(--text-secondary);
             font-size: 0.9rem;
         }
 
         .file-actions button {
-            background: #ef4444;
+            background: var(--bg-button-remove);
             color: white;
             border: none;
             padding: 8px 16px;
@@ -185,7 +326,7 @@
         }
 
         .file-actions button:hover {
-            background: #dc2626;
+            background: var(--bg-button-remove-hover);
         }
 
         /* Step 2: Processing Options */
@@ -195,17 +336,19 @@
         }
 
         .option-group {
-            background: #f8fafc;
+            background: var(--bg-option-group);
             padding: 25px;
             border-radius: 12px;
-            border: 1px solid #e2e8f0;
+            border: var(--border-option-group);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
         }
 
         .option-group h4 {
             font-size: 1.1rem;
             font-weight: 600;
             margin-bottom: 15px;
-            color: #1e293b;
+            color: var(--text-primary);
         }
 
         .device-grid {
@@ -217,34 +360,43 @@
 
         .device-option {
             padding: 20px;
-            border: 2px solid #e2e8f0;
+            border: var(--border-device-option);
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s;
             text-align: center;
-            background: white;
+            background: var(--bg-device-option);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
         }
 
         .device-option:hover {
-            border-color: #667eea;
+            border-color: var(--border-device-option-hover);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
 
         .device-option.selected {
-            border-color: #667eea;
-            background: #f0f4ff;
+            border-color: var(--border-device-option-hover);
+            background: var(--bg-device-option-selected);
+            animation: device-select-pop 0.3s ease-out;
+        }
+
+        @keyframes device-select-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .device-option strong {
             display: block;
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary);
             margin-bottom: 5px;
         }
 
         .device-option small {
-            color: #64748b;
+            color: var(--text-secondary);
             font-size: 0.85rem;
         }
 
@@ -258,18 +410,18 @@
             width: 20px;
             height: 20px;
             margin-right: 12px;
-            accent-color: #667eea;
+            accent-color: var(--accent-color);
         }
 
         .checkbox-group label {
             font-weight: 500;
-            color: #374151;
+            color: var(--text-primary);
             cursor: pointer;
         }
 
         /* Buttons */
         .btn {
-            background: #667eea;
+            background: var(--btn-bg);
             color: white;
             border: none;
             padding: 15px 30px;
@@ -281,16 +433,47 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .btn:hover:not(:disabled) {
-            background: #5a67d8;
+            background: var(--btn-bg-hover);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn .spinner {
+            display: none;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        .btn.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn.loading span {
+            visibility: hidden;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .btn:disabled {
-            background: #9ca3af;
+            background: var(--btn-bg-disabled);
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -302,11 +485,11 @@
         }
 
         .btn-success {
-            background: #10b981;
+            background: var(--btn-success-bg);
         }
 
         .btn-success:hover:not(:disabled) {
-            background: #059669;
+            background: var(--btn-success-bg-hover);
         }
 
         /* Step 4: Series Information */
@@ -318,21 +501,24 @@
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #374151;
+            color: var(--text-primary);
         }
 
         .series-input input {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e2e8f0;
+            border: 1px solid transparent;
+            background-color: var(--input-bg);
+            color: var(--text-primary);
             border-radius: 8px;
             font-size: 1rem;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
 
         .series-input input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--input-border-focus);
+            box-shadow: var(--input-focus-glow);
         }
 
         .books-list {
@@ -344,10 +530,10 @@
             align-items: center;
             gap: 20px;
             padding: 20px;
-            background: #f8fafc;
+            background: var(--bg-file-item);
             border-radius: 10px;
             margin-bottom: 15px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-file-item);
         }
 
         .book-info {
@@ -356,12 +542,12 @@
 
         .book-info h4 {
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary);
             margin-bottom: 5px;
         }
 
         .book-info p {
-            color: #64748b;
+            color: var(--text-secondary);
             font-size: 0.9rem;
         }
 
@@ -372,10 +558,19 @@
         .index-input input {
             width: 100%;
             padding: 8px 12px;
-            border: 2px solid #e2e8f0;
+            border: 1px solid transparent;
+            background-color: var(--input-bg);
+            color: var(--text-primary);
             border-radius: 6px;
             text-align: center;
             font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .index-input input:focus {
+            outline: none;
+            border-color: var(--input-border-focus);
+            box-shadow: var(--input-focus-glow);
         }
 
         /* Step 5: Progress & Download */
@@ -386,9 +581,9 @@
         .progress-item {
             margin-bottom: 20px;
             padding: 20px;
-            background: #f8fafc;
+            background: var(--bg-file-item);
             border-radius: 10px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-file-item);
         }
 
         .progress-header {
@@ -396,67 +591,57 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
         }
 
         .progress-title {
             font-weight: 600;
-            color: #1e293b;
+            color: var(--text-primary);
+            flex-grow: 1; /* Allow title to take available space */
+            margin-right: 10px; /* Space between title and status/button */
         }
 
         .progress-status {
             font-size: 0.9rem;
-            color: #64748b;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            margin-right: 10px; /* Space between status and button */
         }
 
         .progress-bar {
             width: 100%;
             height: 8px;
-            background: #e2e8f0;
+            background: var(--border-color);
             border-radius: 4px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: #667eea;
+            background: var(--accent-color);
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.6s ease-out;
         }
 
-        .download-links {
-            margin-top: 30px;
+        .progress-fill.completed {
+            background: var(--bg-step-completed);
+            box-shadow: 0 0 10px var(--bg-step-completed);
         }
 
-        .download-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-
-        .download-info h4 {
-            color: #0c4a6e;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .download-info p {
-            color: #0369a1;
-            font-size: 0.9rem;
+        .download-button-container {
+            white-space: nowrap;
+            margin-left: auto; /* Push to the right */
         }
 
         .btn-download {
-            background: #0ea5e9;
-            padding: 10px 20px;
-            font-size: 0.9rem;
+            background: var(--btn-download-bg);
+            padding: 8px 15px; /* Smaller padding for a more compact button */
+            font-size: 0.85rem; /* Smaller font size */
+            border-radius: 8px;
         }
 
         .btn-download:hover:not(:disabled) {
-            background: #0284c7;
+            background: var(--btn-download-bg-hover);
         }
 
         /* Responsive */
@@ -493,12 +678,68 @@
         .step.active {
             animation: fadeIn 0.5s ease;
         }
+
+        [data-theme='dark'] {
+            --bg-gradient-start: #1f2937;
+            --bg-gradient-end: #111827;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-on-primary: #f3f4f6;
+            --bg-container: rgba(31, 41, 55, 0.7);
+            --container-border: 1px solid rgba(255, 255, 255, 0.1);
+            --backdrop-blur: blur(10px);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            --border-color: #374151;
+            --bg-step-number: #4f46e5;
+            --bg-step-completed: #10b981;
+            --bg-dropzone: rgba(55, 65, 81, 0.7);
+            --bg-dropzone-hover: rgba(75, 85, 99, 0.7);
+            --border-dropzone: #4b5563;
+            --border-dropzone-hover: #6366f1;
+            --bg-file-item: rgba(55, 65, 81, 0.7);
+            --border-file-item: #4b5563;
+            --bg-button-remove: #ef4444;
+            --bg-button-remove-hover: #dc2626;
+            --bg-option-group: rgba(55, 65, 81, 0.6);
+            --border-option-group: 1px solid rgba(255, 255, 255, 0.1);
+            --bg-device-option: rgba(75, 85, 99, 0.5);
+            --border-device-option: 1px solid rgba(255, 255, 255, 0.1);
+            --border-device-option-hover: #6366f1;
+            --bg-device-option-selected: rgba(79, 70, 229, 0.3);
+            --accent-color: #6366f1;
+            --btn-bg: #4f46e5;
+            --btn-bg-hover: #6366f1;
+            --btn-bg-disabled: #4b5563;
+            --btn-success-bg: #10b981;
+            --btn-success-bg-hover: #059669;
+            --input-border: #4b5563;
+            --input-border-focus: #6366f1;
+            --bg-download-item: rgba(55, 65, 81, 0.7);
+            --border-download-item: #4b5563;
+            --text-download-item-header: #93c5fd;
+            --text-download-item-p: #60a5fa;
+            --btn-download-bg: #2563eb;
+            --btn-download-bg-hover: #1d4ed8;
+            --theme-toggle-bg: #374151;
+            --theme-toggle-color: #f3f4f6;
+            --theme-toggle-bg-hover: #4b5563;
+            --footer-text-color: #9ca3af;
+            --hyperlink-footer-text-color: #ffffff;
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-focus-glow: 0 0 0 2px rgba(99, 102, 241, 0.4);
+        }
     </style>
 </head>
 <body>
+    <button id="themeToggleBtn" class="theme-toggle-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
     <div class="container">
         <div class="header">
-            <h1>📚 Kobo Series Editor</h1>
+            <h1>
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -4px; margin-right: 10px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                Kobo Series Editor
+            </h1>
             <p>EPUB 系列索引生成 與 轉換成 KEPUB</p>
         </div>
 
@@ -514,7 +755,9 @@
                 </div>
                 
                 <div class="file-drop-zone" id="dropZone">
-                    <div class="icon">📁</div>
+                    <div class="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12.5V7.5a2 2 0 0 0-2-2h-4.586a1 1 0 0 1-.707-.293l-1.414-1.414A2 2 0 0 0 11.586 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5.5"></path><path d="M14 18.5a4 4 0 1 0 8 0 4 4 0 1 0-8 0Z"></path><path d="M18 16.5v4"></path><path d="M16 18.5h4"></path></svg>
+                    </div>
                     <h3>拖放 EPUB 文件到這裡</h3>
                     <p>或點擊選擇文件 • 支援多個文件同時處理</p>
                     <input type="file" id="fileInput" class="file-input" multiple accept=".epub">
@@ -587,7 +830,8 @@
                 </div>
 
                 <button class="btn btn-large" id="prepareBtn">
-                    🚀 準備轉換
+                    <span>🚀 準備轉換</span>
+                    <div class="spinner"></div>
                 </button>
             </div>
 
@@ -609,7 +853,8 @@
                 <div class="books-list" id="booksList"></div>
 
                 <button class="btn btn-large btn-success" id="convertBtn">
-                    ⚡ 轉換為 KEPUB
+                    <span>⚡ 轉換為 KEPUB</span>
+                    <div class="spinner"></div>
                 </button>
             </div>
 
@@ -624,7 +869,12 @@
                 </div>
 
                 <div class="progress-container" id="progressContainer"></div>
-                <div class="download-links" id="downloadLinks"></div>
+
+                <div class="download-all-container" id="downloadAllContainer" style="display: none; text-align: center; margin-top: 30px;">
+                    <button class="btn btn-large btn-success" id="downloadAllBtn">
+                        📦 一鍵下載所有文件
+                    </button>
+                </div>
                 
             </div>
         </div>
@@ -637,22 +887,26 @@
         </b></div>
     </div>
 
+    <div id="toastContainer"></div>
+
     <style>
     .footer {
         text-align: center;
         padding: 30px 20px;
-        color: white;
+        color: var(--footer-text-color);
         font-size: 0.9rem;
         opacity: 0.8;
     }
     .footer-content {
         display: inline-block;
         text-align: left;
+        font-weight: 750;
     }
     .footer a {
-        color: white;
+        color: var(--hyperlink-footer-text-color);
         text-decoration: none;
         transition: opacity 0.2s;
+        font-weight: 750;
     }
     .footer a:hover {
         opacity: 0.8;
@@ -663,6 +917,57 @@
     .footer p:last-child {
         margin-bottom: 0;
     }
+
+    /* Toast Notifications */
+    #toastContainer {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .toast {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 10px;
+        padding: 15px 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        color: #333;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(-20px);
+        animation: toast-in 0.5s forwards, toast-out 0.5s 2.5s forwards;
+        min-width: 250px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+
+    .toast.success {
+        background: rgba(144, 238, 144, 0.8);
+        border-color: rgba(144, 238, 144, 0.9);
+    }
+
+    .toast.error {
+        background: rgba(255, 99, 71, 0.8);
+        border-color: rgba(255, 99, 71, 0.9);
+        color: white;
+    }
+
+    @keyframes toast-in {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes toast-out {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-20px); }
+    }
     </style>
 
     <!-- Load Kepubify scripts first -->
@@ -672,6 +977,7 @@
     <script>
         // 全局變量
         let selectedFiles = [];
+        let fileCounter = 0; // To generate unique IDs for files
         let config = {
             deviceResolution: null,
             addSeriesMetadata: true
@@ -698,7 +1004,9 @@
             booksList: document.getElementById('booksList'),
             convertBtn: document.getElementById('convertBtn'),
             progressContainer: document.getElementById('progressContainer'),
-            downloadLinks: document.getElementById('downloadLinks')
+            downloadAllContainer: document.getElementById('downloadAllContainer'),
+            downloadAllBtn: document.getElementById('downloadAllBtn'),
+            themeToggleBtn: document.getElementById('themeToggleBtn')
         };
 
         // 初始化
@@ -756,6 +1064,25 @@
 
             // Step 4: Convert
             elements.convertBtn.addEventListener('click', startConversion);
+
+            // Step 5: Download All
+            elements.downloadAllBtn.addEventListener('click', downloadAllFiles);
+
+            // Theme Toggler
+            elements.themeToggleBtn.addEventListener('click', toggleTheme);
+
+            // Load initial theme
+            loadTheme();
+
+            // Glassmorphism mouse follow effect
+            const container = document.querySelector('.workflow-container');
+            container.addEventListener('mousemove', e => {
+                const rect = container.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                container.style.setProperty('--mouse-x', `${x}px`);
+                container.style.setProperty('--mouse-y', `${y}px`);
+            });
         }
 
         // Step 1: File handling
@@ -772,20 +1099,94 @@
         function handleDrop(e) {
             e.preventDefault();
             elements.dropZone.classList.remove('dragover');
-            const files = Array.from(e.dataTransfer.files).filter(file => file.name.endsWith('.epub'));
-            addFiles(files);
+            const items = e.dataTransfer.items;
+            let filesToProcess = [];
+            let folderName = '';
+            let pendingEntries = 0;
+
+            function processEntry(entry) {
+                if (entry.isFile) {
+                    entry.file(file => {
+                        if (file.name.endsWith('.epub')) {
+                            filesToProcess.push(file);
+                        }
+                        if (--pendingEntries === 0) {
+                            addFiles(filesToProcess);
+                            if (folderName && elements.seriesName.value === '') {
+                                elements.seriesName.value = folderName;
+                            }
+                        }
+                    });
+                } else if (entry.isDirectory) {
+                    folderName = folderName || entry.name; // Set folderName only if not already set
+                    let directoryReader = entry.createReader();
+                    directoryReader.readEntries(entries => {
+                        if (entries.length === 0) {
+                            if (--pendingEntries === 0) {
+                                addFiles(filesToProcess);
+                                if (folderName && elements.seriesName.value === '') {
+                                    elements.seriesName.value = folderName;
+                                }
+                            }
+                            return;
+                        }
+                        pendingEntries += entries.length;
+                        entries.forEach(processEntry);
+                        if (!--pendingEntries) { // Decrement for the directory itself
+                            addFiles(filesToProcess);
+                            if (folderName && elements.seriesName.value === '') {
+                                elements.seriesName.value = folderName;
+                            }
+                        }
+                    });
+                }
+            }
+
+            if (items.length > 0) {
+                pendingEntries = items.length;
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i].webkitGetAsEntry();
+                    if (item) {
+                        processEntry(item);
+                    } else {
+                        if (--pendingEntries === 0) {
+                            addFiles(filesToProcess);
+                            if (folderName && elements.seriesName.value === '') {
+                                elements.seriesName.value = folderName;
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Fallback for browsers that don't support webkitGetAsEntry (shouldn't happen with webkitdirectory removed)
+                const files = Array.from(e.dataTransfer.files).filter(file => file.name.endsWith('.epub'));
+                addFiles(files);
+            }
         }
 
         function handleFileSelect(e) {
             const files = Array.from(e.target.files).filter(file => file.name.endsWith('.epub'));
             addFiles(files);
+            // No folder name extraction for direct file input
         }
 
         function addFiles(files) {
-            selectedFiles = [...selectedFiles, ...files];
+            files.forEach(file => {
+                const uniqueId = `file-${fileCounter++}`;
+                let displayFileName = file.name;
+                let counter = 1;
+                while (selectedFiles.some(f => f.displayFileName === displayFileName)) {
+                    const parts = file.name.split('.');
+                    const name = parts.slice(0, -1).join('.');
+                    const ext = parts[parts.length - 1];
+                    displayFileName = `${name} (${counter++}).${ext}`;
+                }
+                selectedFiles.push({ id: uniqueId, originalFile: file, displayFileName: displayFileName });
+            });
             updateFileList();
             enableStep2();
             log(`已添加 ${files.length} 個文件，總計 ${selectedFiles.length} 個文件`);
+            showToast(`已添加 ${files.length} 個文件`, 'success');
         }
 
         function updateFileList() {
@@ -795,8 +1196,8 @@
                 fileItem.className = 'file-item';
                 fileItem.innerHTML = `
                     <div class="file-info">
-                        <h4>${file.name}</h4>
-                        <p>${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                        <h4>${file.displayFileName}</h4>
+                        <p>${(file.originalFile.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
                     <div class="file-actions">
                         <button onclick="removeFile(${index})">移除</button>
@@ -813,6 +1214,7 @@
                 disableStep2();
             }
             log(`已移除文件，剩餘 ${selectedFiles.length} 個文件`);
+            showToast('文件已移除', 'info');
         }
 
         // Step 2: Options handling
@@ -861,6 +1263,9 @@
         function prepareForConversion() {
             updateConfig();
             
+            elements.prepareBtn.classList.add('loading');
+            elements.prepareBtn.disabled = true;
+
             if (config.addSeriesMetadata) {
                 showStep4();
             } else {
@@ -869,6 +1274,8 @@
             }
             
             markStepCompleted('step3');
+            elements.prepareBtn.classList.remove('loading');
+            elements.prepareBtn.disabled = false;
         }
 
         function showStep4() {
@@ -881,14 +1288,14 @@
             elements.booksList.innerHTML = '';
             
             selectedFiles.forEach((file, index) => {
-                const extractedIndex = extractSeriesIndexFromFilename(file.name);
+                const extractedIndex = extractSeriesIndexFromFilename(file.originalFile.name);
                 
                 const bookItem = document.createElement('div');
                 bookItem.className = 'book-item';
                 bookItem.innerHTML = `
                     <div class="book-info">
-                        <h4>${file.name}</h4>
-                        <p>${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                        <h4>${file.displayFileName}</h4>
+                        <p>${(file.originalFile.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
                     <div class="index-input">
                         <input type="text" value="${extractedIndex}" 
@@ -912,7 +1319,12 @@
         function startConversion() {
             showStep5();
             markStepCompleted('step4');
-            processAllFiles();
+            elements.convertBtn.classList.add('loading');
+            elements.convertBtn.disabled = true;
+            processAllFiles().finally(() => {
+                elements.convertBtn.classList.remove('loading');
+                elements.convertBtn.disabled = false;
+            });
         }
 
         function showStep5() {
@@ -923,7 +1335,7 @@
         // Step 5: Processing
         async function processAllFiles() {
             elements.progressContainer.innerHTML = '';
-            elements.downloadLinks.innerHTML = '';
+            elements.downloadAllContainer.style.display = 'none'; // Hide download all button initially
             
             log('開始處理所有文件...');
             
@@ -935,19 +1347,54 @@
                     log('警告: Kepubify 初始化失敗，將跳過 KEPUB 轉換');
                 }
             }
+
+            // Pre-render all progress items
+            const progressItems = {};
+            selectedFiles.forEach((file, index) => {
+                progressItems[file.id] = createProgressItem(file.displayFileName, index);
+            });
             
             for (let i = 0; i < selectedFiles.length; i++) {
                 const file = selectedFiles[i];
-                await processFile(file, i);
+                await processFile(file.originalFile, i, progressItems[file.id], file.displayFileName);
             }
             
             log('所有文件處理完成！');
             markStepCompleted('step5');
+
+            // Show download all button
+            if (selectedFiles.length > 1) {
+                elements.downloadAllContainer.style.display = 'block';
+                showToast('所有文件處理完成！', 'success');
+            } else {
+                showToast('文件處理完成！', 'success');
+            }
         }
 
-        async function processFile(file, index) {
-            const progressItem = createProgressItem(file.name, index);
-            
+        async function downloadAllFiles() {
+            log('開始下載所有已處理的文件...');
+            const downloadButtons = document.querySelectorAll('.btn-download');
+
+            downloadButtons.forEach(button => {
+                const blob = button._blob;
+                const fileName = button._outputFileName; // Use the stored output file name
+                if (blob && fileName) {
+                    // Directly trigger download for each file
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    log(`已觸發下載: ${fileName}`);
+                }
+            });
+            showToast('所有文件下載已觸發！', 'success');
+        }
+
+        async function processFile(file, index, progressItem, displayFileName) {
             try {
                 updateProgress(progressItem, 10, '解析 EPUB 文件...');
                 const zip = await JSZip.loadAsync(file);
@@ -979,10 +1426,12 @@
                 
                 // Convert with Kepubify
                 let finalBlob = processedEpubBlob;
+                let outputFileName = displayFileName;
                 if (kepubifyInstance) {
                     updateProgress(progressItem, 90, '轉換為 KEPUB...');
                     try {
                         finalBlob = await convertWithKepubify(processedEpubBlob);
+                        outputFileName = displayFileName.replace('.epub', '.kepub.epub');
                     } catch (error) {
                         log(`Kepubify 轉換失敗: ${error.message}，使用處理後的 EPUB`);
                     }
@@ -991,15 +1440,11 @@
                 updateProgress(progressItem, 100, '完成');
                 
                 // Create download link
-                const fileName = kepubifyInstance 
-                    ? file.name.replace('.epub', '.kepub.epub')
-                    : file.name.replace('.epub', '_processed.epub');
-                    
-                createDownloadLink(finalBlob, fileName, file.name);
-                
+                createDownloadLink(finalBlob, outputFileName, progressItem);
             } catch (error) {
                 updateProgress(progressItem, 0, `錯誤: ${error.message}`);
                 log(`處理 ${file.name} 時發生錯誤: ${error.message}`);
+                showToast(`處理 '${file.name}' 失敗: ${error.message}`, 'error');
             }
         }
 
@@ -1010,6 +1455,7 @@
                 <div class="progress-header">
                     <div class="progress-title">${fileName}</div>
                     <div class="progress-status">等待中...</div>
+                    <div class="download-button-container" style="display: none;"></div>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill"></div>
@@ -1027,29 +1473,23 @@
             fillElement.style.width = `${percent}%`;
             
             if (percent === 100) {
-                fillElement.style.background = '#10b981';
-                statusElement.style.color = '#059669';
+                fillElement.style.background = 'var(--bg-step-completed)';
+                statusElement.style.color = 'var(--bg-step-completed)';
+                fillElement.classList.add('completed');
             }
         }
 
-        function createDownloadLink(blob, fileName, originalName) {
-            const downloadItem = document.createElement('div');
-            downloadItem.className = 'download-item';
-            downloadItem.innerHTML = `
-                <div class="download-info">
-                    <h4>${fileName}</h4>
-                    <p>源文件 ${originalName} </p>
-                </div>
-                <button class="btn btn-download" onclick="downloadBlob(this, '${fileName}')">
-                    📥 下載
-                </button>
-            `;
-            
-            // Store blob in button for download
-            const button = downloadItem.querySelector('button');
-            button._blob = blob;
-            
-            elements.downloadLinks.appendChild(downloadItem);
+        function createDownloadLink(blob, fileName, progressItem) {
+            const downloadButtonContainer = progressItem.querySelector('.download-button-container');
+            downloadButtonContainer.style.display = 'block';
+
+            const downloadButton = document.createElement('button');
+            downloadButton.className = 'btn btn-download';
+            downloadButton.innerHTML = `📥 下載`;
+            downloadButton._blob = blob;
+            downloadButton._outputFileName = fileName; // Store the output file name
+            downloadButton.onclick = () => downloadBlob(downloadButton, fileName);
+            downloadButtonContainer.appendChild(downloadButton);
         }
 
         // Utility functions
@@ -1349,15 +1789,61 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                log(`開始下載: ${fileName}`);
-            } catch (error) {
-                log(`下載失敗: ${error.message}`);
-            }
+                document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            log(`開始下載: ${fileName}`);
+            showToast(`開始下載: ${fileName}`, 'info');
+        } catch (error) {
+            log(`下載失敗: ${error.message}`);
+            showToast(`下載失敗: ${error.message}`, 'error');
+        }
         }
 
         // Global functions for HTML onclick
         window.removeFile = removeFile;
         window.downloadBlob = downloadBlob;
+
+        // Theme switching functions
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const sunIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+            const moonIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+            elements.themeToggleBtn.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-20px)';
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 3000);
+        }
+
+        function updateThemeIcon(theme) {
+            const sunIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+            const moonIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+            elements.themeToggleBtn.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
+        }
     </script>
 </body>
 </html>
