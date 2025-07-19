@@ -47,7 +47,7 @@
             --btn-success-bg: #10b981;
             --btn-success-bg-hover: #059669;
             --input-border: #e2e8f0;
-            --input-border-focus: #667eea;
+            --input-border-focus: #eef0f2;
             --bg-download-item: #f0f9ff;
             --border-download-item: #bae6fd;
             --text-download-item-header: #0c4a6e;
@@ -85,19 +85,18 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            background: transparent;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--accent-color);
+            background: rgba(107, 114, 128, 0.3);
             border-radius: 10px;
             border: 2px solid transparent;
             background-clip: padding-box;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--btn-bg-hover);
+            background: rgba(107, 114, 128, 0.6);
             background-clip: padding-box;
         }
 
@@ -252,6 +251,7 @@
             border-color: var(--border-dropzone-hover);
             background: var(--bg-dropzone-hover);
             transform: translateY(-2px);
+            box-shadow: 0 0 0 2px var(--border-dropzone-hover); /* Changed from 4px to 2px */
         }
 
         .file-drop-zone .icon {
@@ -492,6 +492,14 @@
             background: var(--btn-success-bg-hover);
         }
 
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #5a6268;
+        }
+
         /* Step 4: Series Information */
         .series-input {
             margin-bottom: 30px;
@@ -694,7 +702,7 @@
             --bg-step-completed: #10b981;
             --bg-dropzone: rgba(55, 65, 81, 0.7);
             --bg-dropzone-hover: rgba(75, 85, 99, 0.7);
-            --border-dropzone: #4b5563;
+            --border-dropzone: #6366f1;
             --border-dropzone-hover: #6366f1;
             --bg-file-item: rgba(55, 65, 81, 0.7);
             --border-file-item: #4b5563;
@@ -764,6 +772,8 @@
                 </div>
 
                 <div class="file-list" id="fileList"></div>
+
+                <button class="btn btn-secondary" id="clearFilesBtn" style="display: none; margin-top: 20px;">清空所有文件</button>
             </div>
 
             <!-- Step 2: Processing Options -->
@@ -1006,7 +1016,8 @@
             progressContainer: document.getElementById('progressContainer'),
             downloadAllContainer: document.getElementById('downloadAllContainer'),
             downloadAllBtn: document.getElementById('downloadAllBtn'),
-            themeToggleBtn: document.getElementById('themeToggleBtn')
+            themeToggleBtn: document.getElementById('themeToggleBtn'),
+            clearFilesBtn: document.getElementById('clearFilesBtn')
         };
 
         // 初始化
@@ -1067,6 +1078,9 @@
 
             // Step 5: Download All
             elements.downloadAllBtn.addEventListener('click', downloadAllFiles);
+
+            // Clear Files
+            elements.clearFilesBtn.addEventListener('click', clearFiles);
 
             // Theme Toggler
             elements.themeToggleBtn.addEventListener('click', toggleTheme);
@@ -1191,6 +1205,11 @@
 
         function updateFileList() {
             elements.fileList.innerHTML = '';
+            if (selectedFiles.length > 0) {
+                elements.clearFilesBtn.style.display = 'block';
+            } else {
+                elements.clearFilesBtn.style.display = 'none';
+            }
             selectedFiles.forEach((file, index) => {
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
@@ -1215,6 +1234,22 @@
             }
             log(`已移除文件，剩餘 ${selectedFiles.length} 個文件`);
             showToast('文件已移除', 'info');
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            fileCounter = 0;
+            updateFileList();
+            disableStep2();
+            steps.step4.classList.add('hidden');
+            steps.step4.classList.remove('active');
+            steps.step5.classList.add('hidden');
+            steps.step5.classList.remove('active');
+            elements.seriesName.value = '';
+            elements.progressContainer.innerHTML = '';
+            elements.downloadAllContainer.style.display = 'none';
+            showToast('所有文件已清除', 'info');
+            log('所有文件已清除');
         }
 
         // Step 2: Options handling
