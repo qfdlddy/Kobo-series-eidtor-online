@@ -22,7 +22,6 @@ Web-based tool for processing EPUB files for Kobo e-readers with series metadata
 - **Series Metadata Management**
   - Add series names and indices
   - Automatic index extraction from filenames
-  - Compatible with NickelSeries plugin
 
 - **KEPUB Conversion**
   - Convert EPUB to KEPUB format using Kepubify engine
@@ -70,7 +69,6 @@ Web-based tool for processing EPUB files for Kobo e-readers with series metadata
 - **系列元數據管理**
   - 添加系列名稱和索引
   - 從文件名自動提取索引
-  - 兼容 NickelSeries 插件
 
 - **KEPUB 轉換**
   - 使用 Kepubify 引擎轉換 EPUB 為 KEPUB 格式
