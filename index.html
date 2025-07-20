@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kobo Series Editor - EPUB 系列索引生成工具</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="js/translations.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -74,9 +76,17 @@
         }
 
         @keyframes background-animation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         /* Custom Scrollbar */
@@ -110,14 +120,14 @@
             text-align: center;
             margin-bottom: 40px;
             color: var(--text-primary);
-;
+            ;
         }
 
         .header h1 {
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             color: var(--footer-text-color);
         }
 
@@ -154,6 +164,112 @@
             transform: scale(1.1);
         }
 
+        .language-toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 70px;
+            z-index: 1000;
+            background: var(--theme-toggle-bg);
+            color: var(--theme-toggle-color);
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .language-toggle-btn:hover {
+            background: var(--theme-toggle-bg-hover);
+            transform: scale(1.1);
+        }
+
+        /* NickelSeries link styling */
+        .nickelseries-link {
+            color: inherit !important;
+            text-decoration: none !important;
+            font-weight: bold !important;
+        }
+
+        .nickelseries-link:hover {
+            color: inherit !important;
+            text-decoration: none !important;
+            opacity: 0.8;
+        }
+
+        .nickelseries-link:visited {
+            color: inherit !important;
+            text-decoration: none !important;
+        }
+
+        /* Info tooltip styling */
+        .info-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            margin-left: 4px;
+        }
+
+        .info-tooltip .tooltip-content {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-60%);
+            /* 原本是 -50%，向左偏一點 */
+            background-color: var(--bg-container);
+            color: var(--text-primary);
+            text-align: left;
+            border-radius: 8px;
+            padding: 8px 12px;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            border: var(--container-border);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            white-space: normal;
+            width: max-content;
+            max-width: 250px;
+            font-size: 0.85rem;
+            transition: opacity 0.3s, visibility 0.3s;
+            line-height: 1.4;
+            overflow-wrap: break-word;
+            /* 防止文字爆寬 */
+        }
+
+        .info-tooltip .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--bg-container) transparent transparent transparent;
+        }
+
+        .info-tooltip:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Dark theme tooltip adjustments */
+        [data-theme='dark'] .info-tooltip .tooltip-content {
+            background-color: var(--bg-container);
+            color: var(--text-primary);
+            border: var(--container-border);
+        }
+
+        [data-theme='dark'] .info-tooltip .tooltip-content::after {
+            border-color: var(--bg-container) transparent transparent transparent;
+        }
+
         .workflow-container {
             background: var(--bg-container);
             border-radius: 20px;
@@ -168,8 +284,10 @@
         .workflow-container::before {
             content: '';
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.1), transparent 40%);
             pointer-events: none;
             opacity: 0;
@@ -251,7 +369,8 @@
             border-color: var(--border-dropzone-hover);
             background: var(--bg-dropzone-hover);
             transform: translateY(-2px);
-            box-shadow: 0 0 0 2px var(--border-dropzone-hover); /* Changed from 4px to 2px */
+            box-shadow: 0 0 0 2px var(--border-dropzone-hover);
+            /* Changed from 4px to 2px */
         }
 
         .file-drop-zone .icon {
@@ -297,6 +416,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -383,9 +503,17 @@
         }
 
         @keyframes device-select-pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .device-option strong {
@@ -468,8 +596,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .btn:disabled {
@@ -599,21 +732,25 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
-            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+            flex-wrap: wrap;
+            /* Allow items to wrap on smaller screens */
         }
 
         .progress-title {
             font-weight: 600;
             color: var(--text-primary);
-            flex-grow: 1; /* Allow title to take available space */
-            margin-right: 10px; /* Space between title and status/button */
+            flex-grow: 1;
+            /* Allow title to take available space */
+            margin-right: 10px;
+            /* Space between title and status/button */
         }
 
         .progress-status {
             font-size: 0.9rem;
             color: var(--text-secondary);
             white-space: nowrap;
-            margin-right: 10px; /* Space between status and button */
+            margin-right: 10px;
+            /* Space between status and button */
         }
 
         .progress-bar {
@@ -638,13 +775,16 @@
 
         .download-button-container {
             white-space: nowrap;
-            margin-left: auto; /* Push to the right */
+            margin-left: auto;
+            /* Push to the right */
         }
 
         .btn-download {
             background: var(--btn-download-bg);
-            padding: 8px 15px; /* Smaller padding for a more compact button */
-            font-size: 0.85rem; /* Smaller font size */
+            padding: 8px 15px;
+            /* Smaller padding for a more compact button */
+            font-size: 0.85rem;
+            /* Smaller font size */
             border-radius: 8px;
         }
 
@@ -679,8 +819,15 @@
 
         /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .step.active {
@@ -738,17 +885,26 @@
         }
     </style>
 </head>
+
 <body>
     <button id="themeToggleBtn" class="theme-toggle-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
     </button>
     <div class="container">
         <div class="header">
             <h1>
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -4px; margin-right: 10px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                Kobo Series Editor
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="vertical-align: -4px; margin-right: 10px;">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                <span data-i18n="header.title">Kobo Series Editor</span>
             </h1>
-            <p>EPUB 系列索引生成 與 轉換成 KEPUB</p>
+            <p data-i18n="header.subtitle">EPUB 系列索引生成 與 轉換成 KEPUB</p>
         </div>
 
         <div class="workflow-container">
@@ -756,228 +912,253 @@
             <div class="step active" id="step1">
                 <div class="step-header">
                     <div class="step-number">1</div>
-                    <div class="step-title">選擇 EPUB 文件</div>
+                    <div class="step-title" data-i18n="steps.step1.title">選擇 EPUB 文件</div>
                 </div>
-                <div class="step-description">
+                <div class="step-description" data-i18n="steps.step1.description">
                     拖放您的 EPUB 文件/文件夹到下方區域，或點擊選擇文件
                 </div>
-                
+
                 <div class="file-drop-zone" id="dropZone">
                     <div class="icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12.5V7.5a2 2 0 0 0-2-2h-4.586a1 1 0 0 1-.707-.293l-1.414-1.414A2 2 0 0 0 11.586 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5.5"></path><path d="M14 18.5a4 4 0 1 0 8 0 4 4 0 1 0-8 0Z"></path><path d="M18 16.5v4"></path><path d="M16 18.5h4"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M22 12.5V7.5a2 2 0 0 0-2-2h-4.586a1 1 0 0 1-.707-.293l-1.414-1.414A2 2 0 0 0 11.586 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5.5">
+                            </path>
+                            <path d="M14 18.5a4 4 0 1 0 8 0 4 4 0 1 0-8 0Z"></path>
+                            <path d="M18 16.5v4"></path>
+                            <path d="M16 18.5h4"></path>
+                        </svg>
                     </div>
-                    <h3>拖放 EPUB 文件/文件夹到這裡</h3>
-                    <p>或點擊選擇文件 • 支援多個文件同時處理</p>
+                    <h3 data-i18n="steps.step1.dropzone.title">拖放 EPUB 文件/文件夹到這裡</h3>
+                    <p data-i18n="steps.step1.dropzone.subtitle">或點擊選擇文件 • 支援多個文件同時處理</p>
                     <input type="file" id="fileInput" class="file-input" multiple accept=".epub">
                 </div>
 
                 <div class="file-list" id="fileList"></div>
 
-                <button class="btn btn-secondary" id="clearFilesBtn" style="display: none; margin-top: 20px;">清空所有文件</button>
+                <button class="btn btn-secondary" id="clearFilesBtn" style="display: none; margin-top: 20px;"
+                    data-i18n="steps.step1.clearFiles">清空所有文件</button>
             </div>
 
             <!-- Step 2: Processing Options -->
-            <div class="step disabled" id="step2">
+            <div class="step hidden" id="step2">
                 <div class="step-header">
                     <div class="step-number">2</div>
-                    <div class="step-title">處理選項</div>
+                    <div class="step-title" data-i18n="steps.step2.title">處理選項</div>
                 </div>
-                <div class="step-description">
+                <div class="step-description" data-i18n="steps.step2.description">
                     選擇您的 Kobo 設備型號和處理選項
                 </div>
 
                 <div class="options-grid">
                     <div class="option-group">
-                        <h4>🖼️ 封面圖片調整</h4>
-                        <p>選擇您的 Kobo 設備型號以自動調整封面圖片尺寸</p>
+                        <h4 data-i18n="steps.step2.coverAdjustment.title">🖼️ 封面圖片調整</h4>
+                        <p data-i18n="steps.step2.coverAdjustment.description">選擇您的 Kobo 設備型號以自動調整封面圖片尺寸</p>
                         <div class="device-grid" id="deviceGrid">
                             <div class="device-option" data-resolution="skip">
-                                <strong>跳過</strong>
-                                <small>不調整圖片</small>
+                                <strong data-i18n="devices.skip.name">跳過</strong>
+                                <small data-i18n="devices.skip.description">不調整圖片</small>
                             </div>
                             <div class="device-option" data-resolution="1072,1448">
-                                <strong>Clara HD/Clara 2E</strong>
-                                <small>1072×1448</small>
+                                <strong data-i18n="devices.clara.name">Clara HD/Clara 2E</strong>
+                                <small data-i18n="devices.clara.resolution">1072×1448</small>
                             </div>
                             <div class="device-option" data-resolution="1264,1680">
-                                <strong>Libra H2O/Libra 2</strong>
-                                <small>1264×1680</small>
+                                <strong data-i18n="devices.libra.name">Libra H2O/Libra 2</strong>
+                                <small data-i18n="devices.libra.resolution">1264×1680</small>
                             </div>
                             <div class="device-option" data-resolution="1440,1920">
-                                <strong>Forma/Sage</strong>
-                                <small>1440×1920</small>
+                                <strong data-i18n="devices.forma.name">Forma/Sage</strong>
+                                <small data-i18n="devices.forma.resolution">1440×1920</small>
                             </div>
                             <div class="device-option" data-resolution="1404,1872">
-                                <strong>Elipsa</strong>
-                                <small>1404×1872</small>
+                                <strong data-i18n="devices.elipsa.name">Elipsa</strong>
+                                <small data-i18n="devices.elipsa.resolution">1404×1872</small>
                             </div>
                             <div class="device-option" data-resolution="758,1024">
-                                <strong>Aura/Nia</strong>
-                                <small>758×1024</small>
+                                <strong data-i18n="devices.aura.name">Aura/Nia</strong>
+                                <small data-i18n="devices.aura.resolution">758×1024</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="option-group">
-                        <h4>📖 系列信息</h4>
-                        <p>為您的書籍添加系列名稱和索引，方便在 Kobo 中管理</p>
+                        <h4 data-i18n="steps.step2.seriesInfo.title">📖 系列信息</h4>
+                        <p data-i18n="steps.step2.seriesInfo.description">為您的書籍添加系列名稱和索引，方便在 Kobo 中管理</p>
                         <div class="checkbox-group">
                             <input type="checkbox" id="addSeriesMetadata" checked>
-                            <label for="addSeriesMetadata">添加系列信息到書籍 Metadata</label>
+                            <label for="addSeriesMetadata" data-i18n="steps.step2.seriesInfo.checkbox">添加系列信息到書籍
+                                Metadata</label>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Step 3: Start Processing -->
-            <div class="step disabled" id="step3">
+            <!-- Step 3: Series Information (Hidden initially) -->
+            <div class="step hidden" id="step3">
                 <div class="step-header">
                     <div class="step-number">3</div>
-                    <div class="step-title">開始處理</div>
+                    <div class="step-title" data-i18n="steps.step4.title">輸入系列信息</div>
                 </div>
-                <div class="step-description">
-                    準備處理您的 EPUB 文件
-                </div>
-
-                <button class="btn btn-large" id="prepareBtn">
-                    <span>🚀 準備轉換</span>
-                    <div class="spinner"></div>
-                </button>
-            </div>
-
-            <!-- Step 4: Series Information (Hidden initially) -->
-            <div class="step hidden" id="step4">
-                <div class="step-header">
-                    <div class="step-number">4</div>
-                    <div class="step-title">輸入系列信息</div>
-                </div>
-                <div class="step-description">
+                <div class="step-description" data-i18n="steps.step4.description">
                     為您的書籍設置系列名稱和索引
                 </div>
 
                 <div class="series-input">
-                    <label for="seriesName">系列名稱</label>
-                    <input type="text" id="seriesName" placeholder="例如：哈利波特系列">
+                    <label for="seriesName" data-i18n="steps.step4.seriesName">系列名稱</label>
+                    <input type="text" id="seriesName" data-i18n="steps.step4.placeholder" placeholder="例如：哈利波特系列">
                 </div>
 
                 <div class="books-list" id="booksList"></div>
 
                 <button class="btn btn-large btn-success" id="convertBtn">
-                    <span>⚡ 轉換為 KEPUB</span>
+                    <span data-i18n="steps.step4.button">⚡ 轉換為 KEPUB</span>
                     <div class="spinner"></div>
                 </button>
             </div>
 
-            <!-- Step 5: Progress & Download -->
-            <div class="step hidden" id="step5">
+            <!-- Step 4: Progress & Download -->
+            <div class="step hidden" id="step4">
                 <div class="step-header">
-                    <div class="step-number">5</div>
-                    <div class="step-title">轉換進度</div>
+                    <div class="step-number">4</div>
+                    <div class="step-title" data-i18n="steps.step5.title">轉換進度</div>
                 </div>
-                <div class="step-description">
+                <div class="step-description" data-i18n="steps.step5.description">
                     正在處理您的文件...
                 </div>
 
                 <div class="progress-container" id="progressContainer"></div>
 
-                <div class="download-all-container" id="downloadAllContainer" style="display: none; text-align: center; margin-top: 30px;">
+                <div class="download-all-container" id="downloadAllContainer"
+                    style="display: none; text-align: center; margin-top: 30px;">
                     <button class="btn btn-large btn-success" id="downloadAllBtn">
-                        📦 一鍵下載所有文件
+                        <span data-i18n="steps.step5.downloadAll">📦 一鍵下載所有文件</span>
                     </button>
                 </div>
-                
+
             </div>
         </div>
     </div>
 
     <div class="footer">
         <div class="footer-content"><b>
-            <p>原始項目：<a href="https://github.com/pgaskin/kepubify/" target="_blank">Kepubify</a>，網站其餘代碼由<a href="https://kiro.dev/" target="_blank"> Kiro</a> 與 <a href="https://github.com/google-gemini/gemini-cli" target="_blank">Gemini-cli</a> 產出</p>
-            <p>僅供個人學習交流使用，禁作商業用途</b></p>
-        </b></div>
+                <p><span data-i18n="footer.originalProject">原始項目：</span><a href="https://github.com/pgaskin/kepubify/"
+                        target="_blank">Kepubify</a><span data-i18n="footer.codeBy">，網站其餘代碼由</span><a
+                        href="https://kiro.dev/" target="_blank"> Kiro</a><span data-i18n="footer.and"> 與 </span><a
+                        href="https://github.com/google-gemini/gemini-cli" target="_blank">Gemini-cli</a><span
+                        data-i18n="footer.generated"> 產出</span></p>
+                <p data-i18n="footer.personalUse">僅供個人學習交流使用，禁作商業用途</p>
+            </b></div>
     </div>
 
     <div id="toastContainer"></div>
 
     <style>
-    .footer {
-        text-align: center;
-        padding: 30px 20px;
-        color: var(--footer-text-color);
-        font-size: 0.9rem;
-        opacity: 0.8;
-    }
-    .footer-content {
-        display: inline-block;
-        text-align: left;
-        font-weight: 750;
-    }
-    .footer a {
-        color: var(--hyperlink-footer-text-color);
-        text-decoration: none;
-        transition: opacity 0.2s;
-        font-weight: 750;
-    }
-    .footer a:hover {
-        opacity: 0.8;
-    }
-    .footer p {
-        margin-bottom: 5px;
-    }
-    .footer p:last-child {
-        margin-bottom: 0;
-    }
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--footer-text-color);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
 
-    /* Toast Notifications */
-    #toastContainer {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 10000;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-items: center;
-    }
+        .footer-content {
+            display: inline-block;
+            text-align: left;
+            font-weight: 750;
+        }
 
-    .toast {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 10px;
-        padding: 15px 25px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        color: #333;
-        font-weight: 500;
-        opacity: 0;
-        transform: translateY(-20px);
-        animation: toast-in 0.5s forwards, toast-out 0.5s 2.5s forwards;
-        min-width: 250px;
-        text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.9);
-    }
+        .footer a {
+            color: var(--hyperlink-footer-text-color);
+            text-decoration: none;
+            transition: opacity 0.2s;
+            font-weight: 750;
+        }
 
-    .toast.success {
-        background: rgba(144, 238, 144, 0.8);
-        border-color: rgba(144, 238, 144, 0.9);
-    }
+        .footer a:hover {
+            opacity: 0.8;
+        }
 
-    .toast.error {
-        background: rgba(255, 99, 71, 0.8);
-        border-color: rgba(255, 99, 71, 0.9);
-        color: white;
-    }
+        .footer p {
+            margin-bottom: 5px;
+        }
 
-    @keyframes toast-in {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+        .footer p:last-child {
+            margin-bottom: 0;
+        }
 
-    @keyframes toast-out {
-        from { opacity: 1; transform: translateY(0); }
-        to { opacity: 0; transform: translateY(-20px); }
-    }
+        /* Toast Notifications */
+        #toastContainer {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            align-items: center;
+            pointer-events: none;
+            width: auto;
+            max-width: 90vw;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            color: #333;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: toast-in 0.5s forwards, toast-out 0.5s 2.5s forwards;
+            min-width: 250px;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            pointer-events: auto;
+            position: relative;
+            z-index: 99999;
+        }
+
+        .toast.success {
+            background: rgba(144, 238, 144, 0.8);
+            border-color: rgba(144, 238, 144, 0.9);
+        }
+
+        .toast.error {
+            background: rgba(255, 99, 71, 0.8);
+            border-color: rgba(255, 99, 71, 0.9);
+            color: white;
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes toast-out {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
     </style>
 
     <!-- Load Kepubify scripts first -->
@@ -999,8 +1180,7 @@
             step1: document.getElementById('step1'),
             step2: document.getElementById('step2'),
             step3: document.getElementById('step3'),
-            step4: document.getElementById('step4'),
-            step5: document.getElementById('step5')
+            step4: document.getElementById('step4')
         };
 
         const elements = {
@@ -1009,7 +1189,6 @@
             fileList: document.getElementById('fileList'),
             deviceGrid: document.getElementById('deviceGrid'),
             addSeriesMetadata: document.getElementById('addSeriesMetadata'),
-            prepareBtn: document.getElementById('prepareBtn'),
             seriesName: document.getElementById('seriesName'),
             booksList: document.getElementById('booksList'),
             convertBtn: document.getElementById('convertBtn'),
@@ -1021,26 +1200,26 @@
         };
 
         // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializeEventListeners();
-            log('系統初始化完成');
-            
+            log('System initialized');
+
             // 檢查 Kepubify 載入狀態
             setTimeout(checkKepubifyStatus, 1000);
         });
 
         function checkKepubifyStatus() {
             log('檢查 Kepubify 載入狀態...');
-            
+
             // 檢查各種可能的全局變量
             const possibleNames = ['kepubify', 'kepubify_try'];
             let foundKepubify = false;
-            
+
             for (const name of possibleNames) {
                 if (typeof window[name] !== 'undefined') {
                     log(`✓ 找到 ${name} 模組`);
                     foundKepubify = true;
-                    
+
                     // 檢查是否有 Kepubify 類別
                     if (window[name].Kepubify) {
                         log(`✓ ${name}.Kepubify 類別可用`);
@@ -1051,7 +1230,7 @@
                     }
                 }
             }
-            
+
             if (!foundKepubify) {
                 log('⚠️ 警告: 未找到任何 Kepubify 模組');
                 log('將僅提供 EPUB 處理功能，不包含 KEPUB 轉換');
@@ -1070,13 +1249,10 @@
             elements.deviceGrid.addEventListener('click', handleDeviceSelect);
             elements.addSeriesMetadata.addEventListener('change', updateConfig);
 
-            // Step 3: Prepare
-            elements.prepareBtn.addEventListener('click', prepareForConversion);
-
-            // Step 4: Convert
+            // Step 3: Convert
             elements.convertBtn.addEventListener('click', startConversion);
 
-            // Step 5: Download All
+            // Step 4: Download All
             elements.downloadAllBtn.addEventListener('click', downloadAllFiles);
 
             // Clear Files
@@ -1199,8 +1375,8 @@
             });
             updateFileList();
             enableStep2();
-            log(`已添加 ${files.length} 個文件，總計 ${selectedFiles.length} 個文件`);
-            showToast(`已添加 ${files.length} 個文件`, 'success');
+            log(`${getTranslation('status.filesAdded')} ${files.length} ${getTranslation('status.totalFiles')} ${selectedFiles.length} ${getTranslation('status.totalFiles')}`);
+            showToast(`${getTranslation('status.filesAdded')} ${files.length} ${getTranslation('status.totalFiles')}`, 'success');
         }
 
         function updateFileList() {
@@ -1219,7 +1395,7 @@
                         <p>${(file.originalFile.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
                     <div class="file-actions">
-                        <button onclick="removeFile(${index})">移除</button>
+                        <button onclick="removeFile(${index})">${getTranslation('status.remove')}</button>
                     </div>
                 `;
                 elements.fileList.appendChild(fileItem);
@@ -1233,7 +1409,7 @@
                 disableStep2();
             }
             log(`已移除文件，剩餘 ${selectedFiles.length} 個文件`);
-            showToast('文件已移除', 'info');
+            showToast(getTranslation('status.fileRemoved'), 'info');
         }
 
         function clearFiles() {
@@ -1243,26 +1419,46 @@
             disableStep2();
             steps.step4.classList.add('hidden');
             steps.step4.classList.remove('active');
-            steps.step5.classList.add('hidden');
-            steps.step5.classList.remove('active');
             elements.seriesName.value = '';
             elements.progressContainer.innerHTML = '';
             elements.downloadAllContainer.style.display = 'none';
-            showToast('所有文件已清除', 'info');
+            showToast(getTranslation('status.allFilesCleared'), 'info');
             log('所有文件已清除');
         }
 
         // Step 2: Options handling
         function enableStep2() {
+            steps.step2.classList.remove('hidden');
             steps.step2.classList.remove('disabled');
             steps.step2.classList.add('active');
             markStepCompleted('step1');
+            
+            // 自动滑动到步骤2
+            scrollToStep('step2');
         }
 
         function disableStep2() {
+            steps.step2.classList.add('hidden');
             steps.step2.classList.add('disabled');
             steps.step2.classList.remove('active');
             disableStep3();
+        }
+
+        function disableStep3() {
+            steps.step3.classList.add('hidden');
+            steps.step3.classList.add('disabled');
+            steps.step3.classList.remove('active');
+        }
+
+        // 自动滑动到指定步骤的函数
+        function scrollToStep(stepId) {
+            const stepElement = document.getElementById(stepId);
+            if (stepElement) {
+                stepElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
         }
 
         function handleDeviceSelect(e) {
@@ -1274,9 +1470,13 @@
 
             const resolution = option.dataset.resolution;
             config.deviceResolution = resolution === 'skip' ? 'skip' : resolution.split(',').map(Number);
+
+            // 更新配置
+            updateConfig();
             
+            // 直接跳到系列信息步骤（现在是步骤3）
             enableStep3();
-            
+
             const deviceName = option.querySelector('strong').textContent;
             log(`已選擇設備: ${deviceName}`);
         }
@@ -1288,43 +1488,29 @@
 
         function enableStep3() {
             if (config.deviceResolution !== null) {
+                steps.step3.classList.remove('hidden');
                 steps.step3.classList.remove('disabled');
                 steps.step3.classList.add('active');
                 markStepCompleted('step2');
+                
+                // 自动滑动到步骤3
+                scrollToStep('step3');
+                
+                // 如果启用了系列信息，生成书籍列表
+                if (config.addSeriesMetadata) {
+                    generateBooksList();
+                }
             }
         }
 
-        // Step 3: Prepare for conversion
-        function prepareForConversion() {
-            updateConfig();
-            
-            elements.prepareBtn.classList.add('loading');
-            elements.prepareBtn.disabled = true;
-
-            if (config.addSeriesMetadata) {
-                showStep4();
-            } else {
-                showStep5();
-                startConversion();
-            }
-            
-            markStepCompleted('step3');
-            elements.prepareBtn.classList.remove('loading');
-            elements.prepareBtn.disabled = false;
-        }
-
-        function showStep4() {
-            steps.step4.classList.remove('hidden');
-            steps.step4.classList.add('active');
-            generateBooksList();
-        }
+        // 这个函数已经不需要了，因为我们简化了流程
 
         function generateBooksList() {
             elements.booksList.innerHTML = '';
-            
+
             selectedFiles.forEach((file, index) => {
                 const extractedIndex = extractSeriesIndexFromFilename(file.originalFile.name);
-                
+
                 const bookItem = document.createElement('div');
                 bookItem.className = 'book-item';
                 bookItem.innerHTML = `
@@ -1352,8 +1538,8 @@
 
         // Step 4: Start conversion
         function startConversion() {
-            showStep5();
-            markStepCompleted('step4');
+            showStep4();
+            markStepCompleted('step3');
             elements.convertBtn.classList.add('loading');
             elements.convertBtn.disabled = true;
             processAllFiles().finally(() => {
@@ -1362,18 +1548,21 @@
             });
         }
 
-        function showStep5() {
-            steps.step5.classList.remove('hidden');
-            steps.step5.classList.add('active');
+        function showStep4() {
+            steps.step4.classList.remove('hidden');
+            steps.step4.classList.add('active');
+            
+            // 自动滑动到步骤4（进度步骤）
+            scrollToStep('step4');
         }
 
-        // Step 5: Processing
+        // Step 4: Processing
         async function processAllFiles() {
             elements.progressContainer.innerHTML = '';
             elements.downloadAllContainer.style.display = 'none'; // Hide download all button initially
-            
+
             log('開始處理所有文件...');
-            
+
             // Initialize Kepubify if available
             if (!kepubifyInstance && typeof window.kepubify_try !== 'undefined') {
                 try {
@@ -1388,21 +1577,21 @@
             selectedFiles.forEach((file, index) => {
                 progressItems[file.id] = createProgressItem(file.displayFileName, index);
             });
-            
+
             for (let i = 0; i < selectedFiles.length; i++) {
                 const file = selectedFiles[i];
                 await processFile(file.originalFile, i, progressItems[file.id], file.displayFileName);
             }
-            
+
             log('所有文件處理完成！');
-            markStepCompleted('step5');
+            markStepCompleted('step4');
 
             // Show download all button
             if (selectedFiles.length > 1) {
                 elements.downloadAllContainer.style.display = 'block';
-                showToast('所有文件處理完成！', 'success');
+                showToast(getTranslation('status.allFilesCompleted'), 'success');
             } else {
-                showToast('文件處理完成！', 'success');
+                showToast(getTranslation('status.fileCompleted'), 'success');
             }
         }
 
@@ -1426,44 +1615,44 @@
                     log(`已觸發下載: ${fileName}`);
                 }
             });
-            showToast('所有文件下載已觸發！', 'success');
+            showToast(getTranslation('status.allDownloadsTriggered'), 'success');
         }
 
         async function processFile(file, index, progressItem, displayFileName) {
             try {
-                updateProgress(progressItem, 10, '解析 EPUB 文件...');
+                updateProgress(progressItem, 10, getTranslation('status.processing'));
                 const zip = await JSZip.loadAsync(file);
-                
-                updateProgress(progressItem, 20, '查找 OPF 文件...');
+
+                updateProgress(progressItem, 20, getTranslation('status.findingOpf'));
                 const opfPath = await findOpfPath(zip);
                 if (!opfPath) {
                     throw new Error('找不到 OPF 文件');
                 }
-                
+
                 // Process cover images
                 if (config.deviceResolution && config.deviceResolution !== 'skip') {
-                    updateProgress(progressItem, 30, '處理封面圖片...');
+                    updateProgress(progressItem, 30, getTranslation('status.processingCover'));
                     await processImages(zip, opfPath);
                 }
-                
+
                 // Apply Duokan fix (always applied)
-                updateProgress(progressItem, 50, '應用多看全屏設置...');
+                updateProgress(progressItem, 50, getTranslation('status.applyingDuokan'));
                 await addDuokanFullscreen(zip, opfPath);
-                
+
                 // Add series metadata
                 if (config.addSeriesMetadata) {
-                    updateProgress(progressItem, 60, '添加系列信息...');
+                    updateProgress(progressItem, 60, getTranslation('status.addingSeries'));
                     await addSeriesMetadata(zip, opfPath, file.name, index);
                 }
-                
-                updateProgress(progressItem, 80, '重新打包 EPUB...');
+
+                updateProgress(progressItem, 80, getTranslation('status.repackaging'));
                 const processedEpubBlob = await zip.generateAsync({ type: "blob" });
-                
+
                 // Convert with Kepubify
                 let finalBlob = processedEpubBlob;
                 let outputFileName = displayFileName;
                 if (kepubifyInstance) {
-                    updateProgress(progressItem, 90, '轉換為 KEPUB...');
+                    updateProgress(progressItem, 90, getTranslation('status.convertingKepub'));
                     try {
                         finalBlob = await convertWithKepubify(processedEpubBlob);
                         outputFileName = displayFileName.replace('.epub', '.kepub.epub');
@@ -1471,13 +1660,13 @@
                         log(`Kepubify 轉換失敗: ${error.message}，使用處理後的 EPUB`);
                     }
                 }
-                
-                updateProgress(progressItem, 100, '完成');
-                
+
+                updateProgress(progressItem, 100, getTranslation('status.completed'));
+
                 // Create download link
                 createDownloadLink(finalBlob, outputFileName, progressItem);
             } catch (error) {
-                updateProgress(progressItem, 0, `錯誤: ${error.message}`);
+                updateProgress(progressItem, 0, `${getTranslation('status.error')}: ${error.message}`);
                 log(`處理 ${file.name} 時發生錯誤: ${error.message}`);
                 showToast(`處理 '${file.name}' 失敗: ${error.message}`, 'error');
             }
@@ -1489,7 +1678,7 @@
             progressItem.innerHTML = `
                 <div class="progress-header">
                     <div class="progress-title">${fileName}</div>
-                    <div class="progress-status">等待中...</div>
+                    <div class="progress-status">${getTranslation('status.waiting')}</div>
                     <div class="download-button-container" style="display: none;"></div>
                 </div>
                 <div class="progress-bar">
@@ -1500,13 +1689,34 @@
             return progressItem;
         }
 
+        // Helper function to get translations
+        function getTranslation(key) {
+            if (window.languageManager) {
+                return window.languageManager.getTranslation(key);
+            }
+            // Fallback to Chinese if language manager not available
+            if (typeof translations !== 'undefined') {
+                const keys = key.split('.');
+                let translation = translations['zh-TW'];
+                for (const k of keys) {
+                    if (translation && translation[k]) {
+                        translation = translation[k];
+                    } else {
+                        return key;
+                    }
+                }
+                return translation;
+            }
+            return key;
+        }
+
         function updateProgress(progressItem, percent, status) {
             const statusElement = progressItem.querySelector('.progress-status');
             const fillElement = progressItem.querySelector('.progress-fill');
-            
+
             statusElement.textContent = status;
             fillElement.style.width = `${percent}%`;
-            
+
             if (percent === 100) {
                 fillElement.style.background = 'var(--bg-step-completed)';
                 statusElement.style.color = 'var(--bg-step-completed)';
@@ -1520,7 +1730,7 @@
 
             const downloadButton = document.createElement('button');
             downloadButton.className = 'btn btn-download';
-            downloadButton.innerHTML = `📥 下載`;
+            downloadButton.innerHTML = getTranslation('status.download');
             downloadButton._blob = blob;
             downloadButton._outputFileName = fileName; // Store the output file name
             downloadButton.onclick = () => downloadBlob(downloadButton, fileName);
@@ -1534,6 +1744,16 @@
             stepNumber.innerHTML = '✓';
         }
 
+        function scrollToStep(stepId) {
+            const stepElement = steps[stepId];
+            if (stepElement) {
+                stepElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+
         function log(message) {
             console.log(message);
         }
@@ -1545,7 +1765,7 @@
                 if (!containerFile) {
                     throw new Error('找不到 container.xml');
                 }
-                
+
                 const containerXml = await containerFile.async('string');
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(containerXml, 'text/xml');
@@ -1562,7 +1782,7 @@
                 if (!opfFile) {
                     throw new Error('無法讀取 OPF 文件');
                 }
-                
+
                 const opfContent = await opfFile.async('string');
                 const parser = new DOMParser();
                 const opfDoc = parser.parseFromString(opfContent, 'text/xml');
@@ -1574,7 +1794,7 @@
                     const href = item.getAttribute('href');
                     const imagePath = opfDir + href;
                     const fileName = href.toLowerCase();
-                    
+
                     if (fileName.includes('cover') || fileName.includes('bc')) {
                         await resizeImage(zip, imagePath);
                     }
@@ -1606,26 +1826,26 @@
                 img.onload = () => {
                     try {
                         const [targetWidth, targetHeight] = targetResolution;
-                        
+
                         log(`原始圖片尺寸: ${img.width}x${img.height}`);
                         log(`目標尺寸: ${targetWidth}x${targetHeight}`);
-                        
+
                         // 設置畫布為目標尺寸
                         canvas.width = targetWidth;
                         canvas.height = targetHeight;
-                        
+
                         // 清除畫布並設置白色背景
                         ctx.fillStyle = 'white';
                         ctx.fillRect(0, 0, targetWidth, targetHeight);
-                        
+
                         // 使用拉伸策略：直接將圖片拉伸到目標尺寸，不保持寬高比
                         log(`使用拉伸策略：將圖片直接拉伸到目標尺寸`);
                         log(`寬度縮放比例: ${(targetWidth / img.width).toFixed(3)}`);
                         log(`高度縮放比例: ${(targetHeight / img.height).toFixed(3)}`);
-                        
+
                         // 直接將圖片拉伸到整個畫布
                         ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-                        
+
                         canvas.toBlob((blob) => {
                             if (blob) {
                                 log(`✓ 圖片拉伸完成: ${targetWidth}x${targetHeight}, 文件大小: ${(blob.size / 1024).toFixed(1)} KB`);
@@ -1654,32 +1874,32 @@
                 img.onload = () => {
                     try {
                         const [targetWidth, targetHeight] = targetResolution;
-                        
+
                         // 設置畫布為目標尺寸
                         canvas.width = targetWidth;
                         canvas.height = targetHeight;
-                        
+
                         // 清除畫布並設置白色背景
                         ctx.fillStyle = 'white';
                         ctx.fillRect(0, 0, targetWidth, targetHeight);
-                        
+
                         // 計算縮放參數 - "contain" 策略：保持寬高比，完整顯示圖片
                         const scaleX = targetWidth / img.width;
                         const scaleY = targetHeight / img.height;
                         const scale = Math.min(scaleX, scaleY);
-                        
+
                         const scaledWidth = img.width * scale;
                         const scaledHeight = img.height * scale;
-                        
+
                         // 計算居中位置
                         const offsetX = (targetWidth - scaledWidth) / 2;
                         const offsetY = (targetHeight - scaledHeight) / 2;
-                        
+
                         log(`使用 contain 策略: ${scaledWidth.toFixed(0)}x${scaledHeight.toFixed(0)}`);
-                        
+
                         // 繪製圖片（居中，完整顯示）
                         ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-                        
+
                         canvas.toBlob((blob) => {
                             if (blob) {
                                 log(`✓ 圖片處理完成 (contain): ${targetWidth}x${targetHeight}, 實際圖片: ${scaledWidth.toFixed(0)}x${scaledHeight.toFixed(0)}`);
@@ -1702,7 +1922,7 @@
             try {
                 const opfFile = zip.file(opfPath);
                 if (!opfFile) return;
-                
+
                 const opfContent = await opfFile.async('string');
                 const modifiedOpf = opfContent.replace(
                     /(idref=".*?cover\.xhtml")/gi,
@@ -1718,10 +1938,10 @@
             try {
                 const opfFile = zip.file(opfPath);
                 if (!opfFile) return;
-                
+
                 const opfContent = await opfFile.async('string');
                 const seriesName = elements.seriesName.value || '未命名系列';
-                
+
                 // Get series index from input
                 const indexInput = document.querySelector(`input[data-file-index="${fileIndex}"]`);
                 const seriesIndex = indexInput ? indexInput.value || '1' : '1';
@@ -1746,16 +1966,16 @@
         async function initializeKepubify() {
             try {
                 log('初始化 Kepubify...');
-                
+
                 // 檢查 kepubify_try 是否存在
                 if (typeof window.kepubify_try === 'undefined') {
                     throw new Error('kepubify_try 模組未載入');
                 }
-                
+
                 if (typeof window.kepubify_try.Kepubify === 'undefined') {
                     throw new Error('Kepubify 類別不存在');
                 }
-                
+
                 // 先檢查 WASM 文件是否可訪問
                 log('檢查 WASM 文件可訪問性...');
                 const wasmResponse = await fetch('assets/kepubify-f43a201d.wasm');
@@ -1763,9 +1983,9 @@
                     throw new Error(`WASM 文件載入失敗: HTTP ${wasmResponse.status}`);
                 }
                 log('✓ WASM 文件可訪問');
-                
+
                 kepubifyInstance = new window.kepubify_try.Kepubify();
-                
+
                 // 使用自定義的進度回調
                 await kepubifyInstance.init((loaded, total) => {
                     if (total > 0) {
@@ -1773,11 +1993,11 @@
                         log(`載入 Kepubify WASM: ${percent.toFixed(1)}%`);
                     }
                 });
-                
+
                 log('✓ Kepubify 初始化完成');
             } catch (error) {
                 log(`Kepubify 初始化失敗: ${error.message}`);
-                
+
                 // 提供詳細的錯誤診斷
                 if (error.message.includes('network error')) {
                     log('❌ 網絡錯誤：WASM 文件載入失敗（CORS 問題）');
@@ -1791,7 +2011,7 @@
                     log('❌ HTTP 錯誤：WASM 文件無法載入');
                     log('💡 請確保 assets/kepubify-f43a201d.wasm 文件存在且可訪問');
                 }
-                
+
                 log('⚠️ 將跳過 Kepubify 轉換，僅進行 EPUB 處理');
                 kepubifyInstance = null;
                 // 不拋出錯誤，允許繼續處理
@@ -1803,7 +2023,7 @@
                 log('Kepubify 不可用，跳過轉換');
                 return epubBlob;
             }
-            
+
             try {
                 const kepubifyConfig = new window.kepubify_try.KepubifyConfig();
                 return await kepubifyInstance.kepubify(epubBlob, { options: kepubifyConfig.options });
@@ -1824,11 +2044,11 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-            log(`開始下載: ${fileName}`);
-        } catch (error) {
-            log(`下載失敗: ${error.message}`);
-            showToast(`下載失敗: ${error.message}`, 'error');
-        }
+                log(`開始下載: ${fileName}`);
+            } catch (error) {
+                log(`下載失敗: ${error.message}`);
+                showToast(`下載失敗: ${error.message}`, 'error');
+            }
         }
 
         // Global functions for HTML onclick
@@ -1878,4 +2098,5 @@
         }
     </script>
 </body>
+
 </html>
