@@ -268,7 +268,7 @@
         .info-tooltip .tooltip-content {
             visibility: hidden;
             opacity: 0;
-            position: absolute;
+            position: absolute; /* Will be changed to fixed by JS */
             bottom: 125%;
             left: 50%;
             transform: translateX(-50%);
@@ -283,9 +283,9 @@
             backdrop-filter: var(--backdrop-blur);
             -webkit-backdrop-filter: var(--backdrop-blur);
             width: 300px;
-            max-width: 80vw;
+            max-width: calc(100vw - 20px); /* Max width is viewport width minus buffer */
             font-size: 0.9rem;
-            transition: opacity 0.3s, visibility 0.3s;
+            transition: opacity 0.3s; /* Removed visibility from transition for smoother JS control */
             line-height: 1.5;
             white-space: normal;
             overflow-wrap: break-word;
@@ -1280,39 +1280,60 @@
                 const content = container.querySelector('.tooltip-content');
                 if (!content) return;
 
-                container.addEventListener('mouseenter', () => {
-                    // 1. Reset to default position and make it visible
-                    content.style.left = '50%';
-                    content.style.right = 'auto';
-                    content.style.transform = 'translateX(-50%)';
+                const showTooltip = () => {
+                    // Make it visible but keep it off-screen to calculate dimensions correctly
+                    content.style.visibility = 'hidden';
                     content.classList.add('visible');
 
-                    // 2. Use requestAnimationFrame to ensure dimensions are available after rendering
                     requestAnimationFrame(() => {
-                        const rect = content.getBoundingClientRect();
+                        const iconRect = container.getBoundingClientRect();
+                        const tooltipRect = content.getBoundingClientRect();
                         const viewportWidth = window.innerWidth;
                         const buffer = 10; // 10px buffer from screen edges
 
-                        // 3. Check for overflow and adjust
-                        if (rect.left < buffer) {
-                            content.style.left = '0';
-                            content.style.right = 'auto';
-                            content.style.transform = 'translateX(0)';
-                        } else if (rect.right > viewportWidth - buffer) {
-                            content.style.left = 'auto';
-                            content.style.right = '0';
-                            content.style.transform = 'translateX(0)';
-                        }
-                    });
-                });
+                        // Calculate the ideal centered 'left' position relative to the viewport
+                        let newLeft = iconRect.left + (iconRect.width / 2) - (tooltipRect.width / 2);
 
-                container.addEventListener('mouseleave', () => {
-                    // Hide the tooltip and reset inline styles
+                        // Adjust if it overflows the right edge
+                        if (newLeft + tooltipRect.width > viewportWidth - buffer) {
+                            newLeft = viewportWidth - tooltipRect.width - buffer;
+                        }
+
+                        // Adjust if it overflows the left edge
+                        if (newLeft < buffer) {
+                            newLeft = buffer;
+                        }
+
+                        // Calculate the 'top' position relative to the viewport (10px spacing above the icon)
+                        const newTop = iconRect.top - tooltipRect.height - 10;
+
+                        // Apply styles for fixed positioning
+                        content.style.position = 'fixed';
+                        content.style.top = `${newTop}px`;
+                        content.style.left = `${newLeft}px`;
+                        
+                        // Unset conflicting/initial CSS properties
+                        content.style.bottom = 'auto';
+                        content.style.transform = 'none';
+
+                        // Make it visible at the correct position
+                        content.style.visibility = 'visible';
+                    });
+                };
+
+                const hideTooltip = () => {
                     content.classList.remove('visible');
+                    // Reset all inline styles to allow CSS to take over again
+                    content.style.position = '';
+                    content.style.top = '';
                     content.style.left = '';
-                    content.style.right = '';
+                    content.style.bottom = '';
                     content.style.transform = '';
-                });
+                    content.style.visibility = '';
+                };
+
+                container.addEventListener('mouseenter', showTooltip);
+                container.addEventListener('mouseleave', hideTooltip);
             });
         }
 
