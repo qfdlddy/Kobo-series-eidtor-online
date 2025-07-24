@@ -37,6 +37,11 @@ const translations = {
                     title: '📖 系列信息',
                     description: '為您的書籍添加系列名稱與索引，方便在 Kobo eReader中管理 <span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">此功能需要安裝 <a href="https://pgaskin.net/kepubify/ns/" target="_blank" class="nickelseries-link">NickelSeries</a></span></span>',
                     checkbox: '添加系列信息到書籍 Metadata'
+                },
+                imageEnhancement: {
+                    title: '<span class="beta-tag">Beta</span> 插圖灰階修復 ',
+                    checkbox: '修復 EPUB 中圖片未正確應用 256 灰階抖動的問題。',
+                    note: '⚠️ 注：經測試，此功能在 Kobo Colour 系列設備上无效。<span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">討論： <a href="https://tieba.baidu.com/p/9270087852" target="_blank" class="nickelseries-link">求助，图片显示相关</a></span></span>'
                 }
             },
             step3: {
@@ -56,6 +61,12 @@ const translations = {
                 description: '正在處理您的文件...',
                 downloadAll: '📦 一鍵下載所有文件'
             }
+        },
+
+        imageEnhancement: {
+            title: '圖像處理增強 <span class="beta-tag">Beta</span>',
+            checkbox: '修復 EPUB 中圖片未正確應用 256 灰階抖動的問題。',
+            note: '⚠️ 注：經測試，此功能在 Kobo Colour 系列設備上无效。'
         },
 
         // Device options
@@ -111,7 +122,11 @@ const translations = {
             fileRemoved: '文件已移除',
             allFilesCleared: '所有文件已清除',
             remove: '移除',
-            addedSeriesInfo: '已添加系列信息'
+            addedSeriesInfo: '已添加系列信息',
+            analyzingChapters: '分析章節內容...',
+            splittingChapter: '分割章節為獨立部分...',
+            updatingManifest: '更新 EPUB 清單...',
+            noSplittingNeeded: '無需分割章節'
         },
 
         // Footer
@@ -161,6 +176,11 @@ const translations = {
                     title: '📖 Series Information',
                     description: 'Add series names and index to your ebooks for better organization on your Kobo eReader <span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">This feature requires <a href="https://pgaskin.net/kepubify/ns/" target="_blank" class="nickelseries-link">NickelSeries</a> to be installed</span></span>',
                     checkbox: 'Add series information to book metadata'
+                },
+                imageEnhancement: {
+                    title: '<span class="beta-tag">Beta</span> Image Dithering Enhancement',
+                    checkbox: 'Try to fix the issue where images in EPUB files did not apply 256-level grayscale dithering properly in Kobo eReader.',
+                    note: '⚠️ Note: This feature is not function on Kobo Colour series devices.<span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">Discussion: <a href="https://tieba.baidu.com/p/9270087852" target="_blank" class="nickelseries-link">求助，图片显示相关</a></span></span>'
                 }
             },
             step3: {
@@ -180,6 +200,12 @@ const translations = {
                 description: 'Processing your files...',
                 downloadAll: '📦 Download All Files'
             }
+        },
+
+        imageEnhancement: {
+            title: '<span class="beta-tag">Beta</span> Image Dithering Enhancement',
+            checkbox: 'Try to fix the issue where images in EPUB files did not apply 256-level grayscale dithering properly.',
+            note: '⚠️ Note: This feature is not function on Kobo Colour series devices.'
         },
 
         // Device options
@@ -235,7 +261,11 @@ const translations = {
             fileRemoved: 'File removed',
             allFilesCleared: 'All files cleared',
             remove: 'Remove',
-            addedSeriesInfo: 'Added series information'
+            addedSeriesInfo: 'Added series information',
+            analyzingChapters: 'Analyzing chapter content...',
+            splittingChapter: 'Splitting chapter into sections...',
+            updatingManifest: 'Updating EPUB manifest...',
+            noSplittingNeeded: 'No chapters need splitting'
         },
 
         // Footer
@@ -313,12 +343,9 @@ class LanguageManager {
             if (element.tagName === 'INPUT' && element.type === 'text') {
                 element.placeholder = translation;
             } else {
-                // Check if translation contains HTML (links, formatting)
-                if (translation.includes('<a ') || translation.includes('**')) {
-                    // Handle HTML content and markdown-style formatting
-                    let htmlContent = translation
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Convert **text** to <strong>text</strong>
-                    element.innerHTML = htmlContent;
+                // Check if translation contains any HTML tags
+                if (/<[a-z][\s\S]*>/i.test(translation)) {
+                    element.innerHTML = translation;
                 } else {
                     element.textContent = translation;
                 }
