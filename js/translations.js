@@ -365,6 +365,11 @@ class LanguageManager {
 
         // Update document title
         document.title = this.getTranslation('title');
+
+        // Re-initialize tooltips after the DOM has been updated
+        if (typeof initializeTooltips === 'function') {
+            initializeTooltips();
+        }
     }
 
     setupLanguageToggle() {

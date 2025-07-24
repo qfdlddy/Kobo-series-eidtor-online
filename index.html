@@ -271,26 +271,25 @@
             position: absolute;
             bottom: 125%;
             left: 50%;
-            transform: translateX(-60%);
-            /* 原本是 -50%，向左偏一點 */
+            transform: translateX(-50%);
             background-color: var(--bg-container);
             color: var(--text-primary);
             text-align: left;
             border-radius: 8px;
-            padding: 8px 12px;
+            padding: 12px 16px;
             z-index: 1000;
             box-shadow: var(--shadow);
             border: var(--container-border);
             backdrop-filter: var(--backdrop-blur);
             -webkit-backdrop-filter: var(--backdrop-blur);
-            white-space: normal;
-            width: max-content;
-            max-width: 250px;
-            font-size: 0.85rem;
+            width: 300px;
+            max-width: 80vw;
+            font-size: 0.9rem;
             transition: opacity 0.3s, visibility 0.3s;
-            line-height: 1.4;
+            line-height: 1.5;
+            white-space: normal;
             overflow-wrap: break-word;
-            /* 防止文字爆寬 */
+            pointer-events: none;
         }
 
         .info-tooltip .tooltip-content::after {
@@ -304,7 +303,7 @@
             border-color: var(--bg-container) transparent transparent transparent;
         }
 
-        .info-tooltip:hover .tooltip-content {
+        .info-tooltip .tooltip-content.visible {
             visibility: visible;
             opacity: 1;
         }
@@ -1267,11 +1266,55 @@
         // 初始化
         document.addEventListener('DOMContentLoaded', function () {
             initializeEventListeners();
+            initializeTooltips();
             log('System initialized');
 
             // 檢查 Kepubify 載入狀態
             setTimeout(checkKepubifyStatus, 1000);
         });
+
+        function initializeTooltips() {
+            const tooltipContainers = document.querySelectorAll('.info-tooltip');
+
+            tooltipContainers.forEach(container => {
+                const content = container.querySelector('.tooltip-content');
+                if (!content) return;
+
+                container.addEventListener('mouseenter', () => {
+                    // 1. Reset to default position and make it visible
+                    content.style.left = '50%';
+                    content.style.right = 'auto';
+                    content.style.transform = 'translateX(-50%)';
+                    content.classList.add('visible');
+
+                    // 2. Use requestAnimationFrame to ensure dimensions are available after rendering
+                    requestAnimationFrame(() => {
+                        const rect = content.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth;
+                        const buffer = 10; // 10px buffer from screen edges
+
+                        // 3. Check for overflow and adjust
+                        if (rect.left < buffer) {
+                            content.style.left = '0';
+                            content.style.right = 'auto';
+                            content.style.transform = 'translateX(0)';
+                        } else if (rect.right > viewportWidth - buffer) {
+                            content.style.left = 'auto';
+                            content.style.right = '0';
+                            content.style.transform = 'translateX(0)';
+                        }
+                    });
+                });
+
+                container.addEventListener('mouseleave', () => {
+                    // Hide the tooltip and reset inline styles
+                    content.classList.remove('visible');
+                    content.style.left = '';
+                    content.style.right = '';
+                    content.style.transform = '';
+                });
+            });
+        }
 
         function checkKepubifyStatus() {
             log('檢查 Kepubify 載入狀態...');
