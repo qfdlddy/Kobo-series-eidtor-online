@@ -259,37 +259,98 @@
 
         /* Info tooltip styling */
         .info-tooltip {
-            position: relative;
             display: inline-block;
             cursor: help;
             margin-left: 4px;
+            vertical-align: middle; /* 讓圖標垂直居中 */
         }
-
-        .info-tooltip .tooltip-content {
-            visibility: hidden;
+        /* 請使用這個更新後的 CSS */
+        #app-tooltip {
+            /* 初始狀態 */
+            visibility: hidden; /* 由 JS 控制，不再參與過渡動畫 */
             opacity: 0;
-            position: absolute; /* Will be changed to fixed by JS */
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
+            
+            /* 動畫效果 - 只對 opacity 生效 */
+            transition: opacity 0.2s ease-in-out;
+            
+            /* 其他樣式保持不變 */
+            pointer-events: none;
+            position: fixed;
             background-color: var(--bg-container);
             color: var(--text-primary);
             text-align: left;
             border-radius: 8px;
             padding: 12px 16px;
-            z-index: 1000;
+            z-index: 2147483647;
             box-shadow: var(--shadow);
             border: var(--container-border);
             backdrop-filter: var(--backdrop-blur);
             -webkit-backdrop-filter: var(--backdrop-blur);
             width: 300px;
-            max-width: calc(100vw - 20px); /* Max width is viewport width minus buffer */
+            max-width: calc(100vw - 20px);
             font-size: 0.9rem;
-            transition: opacity 0.3s; /* Removed visibility from transition for smoother JS control */
+            line-height: 1.5;
+            white-space: normal;
+            overflow-wrap: break-word;
+        }
+
+        #app-tooltip.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 箭頭樣式 (保持不變) */
+        #app-tooltip::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+        }
+        #app-tooltip:not(.tooltip-below)::after {
+            top: 100%;
+            border-color: var(--bg-container) transparent transparent transparent;
+        }
+        #app-tooltip.tooltip-below::after {
+            bottom: 100%;
+            border-color: transparent transparent var(--bg-container) transparent;
+        }
+        .info-tooltip .tooltip-content {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed; /* 直接設為 fixed，與 JS 保持一致 */
+            /* 移除了 bottom, left, transform 屬性 */
+            background-color: var(--bg-container);
+            color: var(--text-primary);
+            text-align: left;
+            border-radius: 8px;
+            padding: 12px 16px;
+            z-index: 2147483647;
+            box-shadow: var(--shadow);
+            border: var(--container-border);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            width: 300px;
+            max-width: calc(100vw - 20px);
+            font-size: 0.9rem;
+            transition: opacity 0.3s, visibility 0.3s;
             line-height: 1.5;
             white-space: normal;
             overflow-wrap: break-word;
             pointer-events: none;
+        }
+
+        /* 請將這段 CSS 添加到您的樣式表中 */
+        .option-group.tooltip-active {
+            position: relative; /* z-index 需要一個定位上下文才能生效 */
+            z-index: 100;       /* 這個數值不需要非常大，只要比周圍元素高即可 */
+        }
+        .info-tooltip:hover .tooltip-content,
+        .info-tooltip.is-pinned .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .info-tooltip .tooltip-content::after {
@@ -303,9 +364,10 @@
             border-color: var(--bg-container) transparent transparent transparent;
         }
 
-        .info-tooltip .tooltip-content.visible {
-            visibility: visible;
-            opacity: 1;
+        .info-tooltip .tooltip-content.tooltip-below::after {
+            top: auto;
+            bottom: 100%;
+            border-color: transparent transparent var(--bg-container) transparent;
         }
 
         /* Dark theme tooltip adjustments */
@@ -317,6 +379,10 @@
 
         [data-theme='dark'] .info-tooltip .tooltip-content::after {
             border-color: var(--bg-container) transparent transparent transparent;
+        }
+
+        [data-theme='dark'] .info-tooltip .tooltip-content.tooltip-below::after {
+            border-color: transparent transparent var(--bg-container) transparent;
         }
 
         .workflow-container {
@@ -1220,6 +1286,7 @@
     </style>
 
     <!-- Load Kepubify scripts first -->
+    <div id="app-tooltip" class="tooltip-content"></div>
     <script src="assets/kepubify-75cb720a.js"></script>
     <script src="assets/kepubify_try-a8dd6c1f.js"></script>
 
@@ -1274,69 +1341,108 @@
         });
 
         function initializeTooltips() {
-            const tooltipContainers = document.querySelectorAll('.info-tooltip');
+            const tooltipElement = document.getElementById('app-tooltip');
+            if (!tooltipElement) return;
 
-            tooltipContainers.forEach(container => {
-                const content = container.querySelector('.tooltip-content');
+            let pinnedTrigger = null;
+            let hideTimeout;
+
+            // --- 核心定位函數 (邏輯是正確的，保持不變) ---
+            const positionTooltip = (trigger) => {
+                const iconRect = trigger.getBoundingClientRect();
+                tooltipElement.style.left = '0px';
+                tooltipElement.style.top = '0px';
+                const tooltipRect = tooltipElement.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const buffer = 10;
+                let newLeft = iconRect.left + (iconRect.width / 2) - (tooltipRect.width / 2);
+                if (newLeft < buffer) newLeft = buffer;
+                if (newLeft + tooltipRect.width > viewportWidth - buffer) {
+                    newLeft = viewportWidth - tooltipRect.width - buffer;
+                }
+                let newTop = iconRect.top - tooltipRect.height - 10;
+                tooltipElement.classList.remove('tooltip-below');
+                if (newTop < buffer) {
+                    newTop = iconRect.bottom + 10;
+                    tooltipElement.classList.add('tooltip-below');
+                }
+                tooltipElement.style.left = `${newLeft}px`;
+                tooltipElement.style.top = `${newTop}px`;
+            };
+
+            // --- 顯示 Tooltip (這是修改的核心) ---
+            const showTooltip = (trigger) => {
+                clearTimeout(hideTimeout); // 如果正在計劃隱藏，則取消
+                const content = trigger.dataset.tooltipHtml;
                 if (!content) return;
 
-                const showTooltip = () => {
-                    // Make it visible but keep it off-screen to calculate dimensions correctly
-                    content.style.visibility = 'hidden';
-                    content.classList.add('visible');
+                // 步驟 1: 填充內容，並讓元素進入佈局計算，但對用戶保持不可見
+                tooltipElement.innerHTML = content;
+                tooltipElement.style.visibility = 'visible'; // 讓瀏覽器開始計算尺寸
+                tooltipElement.classList.remove('is-visible'); // 確保 opacity 為 0
 
-                    requestAnimationFrame(() => {
-                        const iconRect = container.getBoundingClientRect();
-                        const tooltipRect = content.getBoundingClientRect();
-                        const viewportWidth = window.innerWidth;
-                        const buffer = 10; // 10px buffer from screen edges
+                // 步驟 2: 使用 requestAnimationFrame 推遲定位操作
+                // 這會等待瀏覽器完成佈局計算，確保我們得到的是最終的、正確的尺寸
+                requestAnimationFrame(() => {
+                    // 現在，tooltipRect 的尺寸是準確的了
+                    positionTooltip(trigger);
+                    // 步驟 3: 在正確的位置上，讓它淡入顯示
+                    tooltipElement.classList.add('is-visible');
+                });
+            };
 
-                        // Calculate the ideal centered 'left' position relative to the viewport
-                        let newLeft = iconRect.left + (iconRect.width / 2) - (tooltipRect.width / 2);
+            // --- 隱藏 Tooltip (同樣變得更健壯) ---
+            const hideTooltip = () => {
+                // 開始淡出動畫
+                tooltipElement.classList.remove('is-visible');
+                
+                // 在 CSS 過渡動畫結束後，再將其從佈局中移除 (visibility: hidden)
+                // 這樣可以防止在動畫過程中觸發不必要的操作
+                hideTimeout = setTimeout(() => {
+                    tooltipElement.style.visibility = 'hidden';
+                }, 200); // 這個時間應與 CSS 中的 transition-duration 匹配
+            };
 
-                        // Adjust if it overflows the right edge
-                        if (newLeft + tooltipRect.width > viewportWidth - buffer) {
-                            newLeft = viewportWidth - tooltipRect.width - buffer;
-                        }
+            // --- 事件監聽器 (保持不變) ---
+            document.body.addEventListener('mouseover', (e) => {
+                const trigger = e.target.closest('.info-tooltip');
+                if (trigger) {
+                    showTooltip(trigger);
+                }
+            });
 
-                        // Adjust if it overflows the left edge
-                        if (newLeft < buffer) {
-                            newLeft = buffer;
-                        }
+            document.body.addEventListener('mouseout', (e) => {
+                const trigger = e.target.closest('.info-tooltip');
+                if (trigger && pinnedTrigger !== trigger) {
+                    hideTooltip();
+                }
+            });
 
-                        // Calculate the 'top' position relative to the viewport (10px spacing above the icon)
-                        const newTop = iconRect.top - tooltipRect.height - 10;
+            document.body.addEventListener('click', (e) => {
+                const trigger = e.target.closest('.info-tooltip');
+                if (trigger) {
+                    e.stopPropagation();
+                    if (pinnedTrigger === trigger) {
+                        pinnedTrigger = null;
+                        hideTooltip();
+                    } else {
+                        pinnedTrigger = trigger;
+                        showTooltip(trigger);
+                    }
+                } else {
+                    if (pinnedTrigger) {
+                        pinnedTrigger = null;
+                        hideTooltip();
+                    }
+                }
+            });
 
-                        // Apply styles for fixed positioning
-                        content.style.position = 'fixed';
-                        content.style.top = `${newTop}px`;
-                        content.style.left = `${newLeft}px`;
-                        
-                        // Unset conflicting/initial CSS properties
-                        content.style.bottom = 'auto';
-                        content.style.transform = 'none';
-
-                        // Make it visible at the correct position
-                        content.style.visibility = 'visible';
-                    });
-                };
-
-                const hideTooltip = () => {
-                    content.classList.remove('visible');
-                    // Reset all inline styles to allow CSS to take over again
-                    content.style.position = '';
-                    content.style.top = '';
-                    content.style.left = '';
-                    content.style.bottom = '';
-                    content.style.transform = '';
-                    content.style.visibility = '';
-                };
-
-                container.addEventListener('mouseenter', showTooltip);
-                container.addEventListener('mouseleave', hideTooltip);
+            window.addEventListener('resize', () => {
+                if (pinnedTrigger) {
+                    positionTooltip(pinnedTrigger);
+                }
             });
         }
-
         function checkKepubifyStatus() {
             log('檢查 Kepubify 載入狀態...');
 

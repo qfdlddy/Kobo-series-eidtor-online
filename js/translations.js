@@ -66,7 +66,7 @@ const translations = {
         imageEnhancement: {
             title: '圖像處理增強 <span class="beta-tag">Beta</span>',
             checkbox: '修復 EPUB 中圖片未正確應用 256 灰階抖動的問題。',
-            note: '⚠️ 注：經測試，此功能在 Kobo Colour 系列設備上无效。'
+            note: '⚠️ 注：經測試，此功能在 Kobo Colour 系列設備上无效。<span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">討論：<a href="https://tieba.baidu.com/p/9270087852" target="_blank" class="nickelseries-link">求助，图片显示相关</a></span></span>'
         },
 
         // Device options
@@ -181,6 +181,11 @@ const translations = {
                     title: '<span class="beta-tag">Beta</span> Image Dithering Enhancement',
                     checkbox: 'Try to fix the issue where images in EPUB files did not apply 256-level grayscale dithering properly in Kobo eReader.',
                     note: '⚠️ Note: This feature is not function on Kobo Colour series devices.<span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">Discussion: <a href="https://tieba.baidu.com/p/9270087852" target="_blank" class="nickelseries-link">求助，图片显示相关</a></span></span>'
+                },
+                chapterSplitting: {
+                    title: '<span class="beta-tag">Beta</span> Chapter Splitting',
+                    checkbox: 'Enable chapter splitting for very large HTML files',
+                    note: '⚠️ Experimental: Automatically splits single HTML files larger than 300KB into multiple parts to improve performance on older Kobo devices.<span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">This feature attempts to split at headings or horizontal rules to preserve chapter integrity. Splitting complex books may cause errors.</span></span>'
                 }
             },
             step3: {
