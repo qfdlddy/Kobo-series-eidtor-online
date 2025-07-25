@@ -16,6 +16,8 @@ class ChapterSplitter {
         ]);
     }
 
+
+
     /**
      * Determines the type of content in an HTML element
      * @param {Element} element - DOM element to analyze
