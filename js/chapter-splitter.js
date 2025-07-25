@@ -7,7 +7,11 @@ class ChapterSplitter {
     constructor() {
         this.filenameWhitelist = new Set([
             'nav.xhtml',
-            'toc.xhtml', 
+            'toc.xhtml',
+            'title.xhtml',
+            'contents.xhtml',
+            'content.xhtml',
+            'author.xhtml',
             'cover.xhtml'
         ]);
     }
