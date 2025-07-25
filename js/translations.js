@@ -35,13 +35,13 @@ const translations = {
                 },
                 seriesInfo: {
                     title: '📖 系列信息',
-                    description: '為您的書籍添加系列名稱與索引，方便在 Kobo eReader中管理 <span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">此功能需要安裝 <a href="https://pgaskin.net/kepubify/ns/" target="_blank" class="nickelseries-link">NickelSeries</a></span></span>',
+                    description: '為您的書籍添加系列名稱與索引，方便在 Kobo eReader中管理<span class="info-tooltip" data-tooltip-html="此功能需要安裝 <a href=\'https://pgaskin.net/kepubify/ns/\' target=\'_blank\' class=\'nickelseries-link\'>NickelSeries</a>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></span>',
                     checkbox: '添加系列信息到書籍 Metadata'
                 },
                 imageEnhancement: {
-                    title: '<span class="beta-tag">Beta</span> 插圖灰階修復 ',
+                    title: '<span class="beta-tag">Beta</span> 插圖灰階修復',
                     checkbox: '修復 EPUB 中圖片未正確應用 256 灰階抖動的問題。',
-                    note: '⚠️ 注：經測試，此功能在 Kobo Colour 系列設備上无效。<span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">討論： <a href="https://tieba.baidu.com/p/9270087852" target="_blank" class="nickelseries-link">求助，图片显示相关</a></span></span>'
+                    note: '⚠️ 注：經測試，此功能在 Kobo Colour 系列設備上无效。<span class="info-tooltip" data-tooltip-html="討論： <a href=\'https://tieba.baidu.com/p/9270087852\' target=\'_blank\' class=\'nickelseries-link\'>求助，图片显示相关</a>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></span>'
                 }
             },
             step3: {
@@ -174,19 +174,14 @@ const translations = {
                 },
                 seriesInfo: {
                     title: '📖 Series Information',
-                    description: 'Add series names and index to your ebooks for better organization on your Kobo eReader <span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">This feature requires <a href="https://pgaskin.net/kepubify/ns/" target="_blank" class="nickelseries-link">NickelSeries</a> to be installed</span></span>',
+                    description: 'Add series names and index to your ebooks for better organization on your Kobo eReader. <span class="info-tooltip" data-tooltip-html="This feature requires <a href=\'https://pgaskin.net/kepubify/ns/\' target=\'_blank\' class=\'nickelseries-link\'>NickelSeries</a> to be installed."><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></span>',
                     checkbox: 'Add series information to book metadata'
                 },
                 imageEnhancement: {
                     title: '<span class="beta-tag">Beta</span> Image Dithering Enhancement',
                     checkbox: 'Try to fix the issue where images in EPUB files did not apply 256-level grayscale dithering properly in Kobo eReader.',
-                    note: '⚠️ Note: This feature is not function on Kobo Colour series devices.<span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">Discussion: <a href="https://tieba.baidu.com/p/9270087852" target="_blank" class="nickelseries-link">求助，图片显示相关</a></span></span>'
+                    note: '⚠️ Note: This feature is not function on Kobo Colour series devices.<span class="info-tooltip" data-tooltip-html="Discussion: <a href=\'https://tieba.baidu.com/p/9270087852\' target=\'_blank\' class=\'nickelseries-link\'>求助，图片显示相关</a>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></span>'
                 },
-                chapterSplitting: {
-                    title: '<span class="beta-tag">Beta</span> Chapter Splitting',
-                    checkbox: 'Enable chapter splitting for very large HTML files',
-                    note: '⚠️ Experimental: Automatically splits single HTML files larger than 300KB into multiple parts to improve performance on older Kobo devices.<span class="info-tooltip"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><span class="tooltip-content">This feature attempts to split at headings or horizontal rules to preserve chapter integrity. Splitting complex books may cause errors.</span></span>'
-                }
             },
             step3: {
                 title: 'Start Processing',

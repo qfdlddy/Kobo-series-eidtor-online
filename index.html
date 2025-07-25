@@ -257,119 +257,72 @@
             text-decoration: none !important;
         }
 
-        /* Info tooltip styling */
         .info-tooltip {
             display: inline-block;
             cursor: help;
             margin-left: 4px;
-            vertical-align: middle; /* 讓圖標垂直居中 */
+            vertical-align: middle;
         }
-        /* 請使用這個更新後的 CSS */
+
+        /* 2. 全局 Tooltip 容器的樣式 */
         #app-tooltip {
             /* 初始狀態 */
-            visibility: hidden; /* 由 JS 控制，不再參與過渡動畫 */
-            opacity: 0;
-            
-            /* 動畫效果 - 只對 opacity 生效 */
-            transition: opacity 0.2s ease-in-out;
-            
-            /* 其他樣式保持不變 */
-            pointer-events: none;
-            position: fixed;
-            background-color: var(--bg-container);
-            color: var(--text-primary);
-            text-align: left;
-            border-radius: 8px;
-            padding: 12px 16px;
-            z-index: 2147483647;
-            box-shadow: var(--shadow);
-            border: var(--container-border);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            width: 300px;
-            max-width: calc(100vw - 20px);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            white-space: normal;
-            overflow-wrap: break-word;
-        }
-
-        #app-tooltip.is-visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* 箭頭樣式 (保持不變) */
-        #app-tooltip::after {
-            content: "";
-            position: absolute;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-        }
-        #app-tooltip:not(.tooltip-below)::after {
-            top: 100%;
-            border-color: var(--bg-container) transparent transparent transparent;
-        }
-        #app-tooltip.tooltip-below::after {
-            bottom: 100%;
-            border-color: transparent transparent var(--bg-container) transparent;
-        }
-        .info-tooltip .tooltip-content {
             visibility: hidden;
             opacity: 0;
-            position: fixed; /* 直接設為 fixed，與 JS 保持一致 */
-            /* 移除了 bottom, left, transform 屬性 */
+            
+            /* 動畫效果 */
+            transition: opacity 0.2s ease-in-out;
+            
+            /* 定位與層級 (關鍵) */
+            position: fixed;
+            z-index: 2147483647; /* 確保它在最高層 */
+            
+            /* 外觀 */
             background-color: var(--bg-container);
             color: var(--text-primary);
-            text-align: left;
             border-radius: 8px;
             padding: 12px 16px;
-            z-index: 2147483647;
             box-shadow: var(--shadow);
             border: var(--container-border);
             backdrop-filter: var(--backdrop-blur);
             -webkit-backdrop-filter: var(--backdrop-blur);
+
+            /* 尺寸與文字處理 */
             width: 300px;
             max-width: calc(100vw - 20px);
             font-size: 0.9rem;
-            transition: opacity 0.3s, visibility 0.3s;
             line-height: 1.5;
             white-space: normal;
             overflow-wrap: break-word;
             pointer-events: none;
         }
 
-        /* 請將這段 CSS 添加到您的樣式表中 */
-        .option-group.tooltip-active {
-            position: relative; /* z-index 需要一個定位上下文才能生效 */
-            z-index: 100;       /* 這個數值不需要非常大，只要比周圍元素高即可 */
-        }
-        .info-tooltip:hover .tooltip-content,
-        .info-tooltip.is-pinned .tooltip-content {
+        /* 3. 可見狀態的樣式 */
+        #app-tooltip.is-visible {
             visibility: visible;
             opacity: 1;
             pointer-events: auto;
         }
 
-        .info-tooltip .tooltip-content::after {
+        /* 4. 箭頭樣式 */
+        #app-tooltip::after {
             content: "";
             position: absolute;
-            top: 100%;
             left: 50%;
-            margin-left: -5px;
+            transform: translateX(-50%);
             border-width: 5px;
             border-style: solid;
+        }
+
+        #app-tooltip:not(.tooltip-below)::after {
+            top: 100%;
             border-color: var(--bg-container) transparent transparent transparent;
         }
 
-        .info-tooltip .tooltip-content.tooltip-below::after {
-            top: auto;
+        #app-tooltip.tooltip-below::after {
             bottom: 100%;
             border-color: transparent transparent var(--bg-container) transparent;
         }
-
         /* Dark theme tooltip adjustments */
         [data-theme='dark'] .info-tooltip .tooltip-content {
             background-color: var(--bg-container);
@@ -1347,60 +1300,66 @@
             let pinnedTrigger = null;
             let hideTimeout;
 
-            // --- 核心定位函數 (邏輯是正確的，保持不變) ---
+            // --- 核心定位函數 (全新、簡化、直接) ---
             const positionTooltip = (trigger) => {
                 const iconRect = trigger.getBoundingClientRect();
+                
+                // 重置樣式以獲取 Tooltip 的自然尺寸
                 tooltipElement.style.left = '0px';
                 tooltipElement.style.top = '0px';
+                
                 const tooltipRect = tooltipElement.getBoundingClientRect();
                 const viewportWidth = window.innerWidth;
-                const buffer = 10;
-                let newLeft = iconRect.left + (iconRect.width / 2) - (tooltipRect.width / 2);
-                if (newLeft < buffer) newLeft = buffer;
-                if (newLeft + tooltipRect.width > viewportWidth - buffer) {
-                    newLeft = viewportWidth - tooltipRect.width - buffer;
-                }
-                let newTop = iconRect.top - tooltipRect.height - 10;
+                const buffer = 10; // 屏幕邊緣的緩衝區
+
+                // 1. 垂直定位：優先在上方，空間不足則在下方
+                let newTop = iconRect.top - tooltipRect.height - 10; // 默認在圖標上方
                 tooltipElement.classList.remove('tooltip-below');
-                if (newTop < buffer) {
-                    newTop = iconRect.bottom + 10;
+
+                if (newTop < buffer) { // 如果上方空間不足
+                    newTop = iconRect.bottom + 10; // 翻轉到圖標下方
                     tooltipElement.classList.add('tooltip-below');
                 }
-                tooltipElement.style.left = `${newLeft}px`;
-                tooltipElement.style.top = `${newTop}px`;
-            };
 
-            // --- 顯示 Tooltip (這是修改的核心) ---
+                // 2. 水平定位：始終嘗試將 Tooltip 中心對齊圖標中心
+                let newLeft = iconRect.left + (iconRect.width / 2) - (tooltipRect.width / 2);
+
+                // 3. 邊界修正：如果超出屏幕，則移動 Tooltip 以確保其完全可見
+                if (newLeft < buffer) {
+                    newLeft = buffer; // 防止左邊溢出
+                }
+                if (newLeft + tooltipRect.width > viewportWidth - buffer) {
+                    // 如果右邊溢出，將 Tooltip 的右邊緣對齊屏幕右邊緣
+                    newLeft = viewportWidth - buffer - tooltipRect.width;
+                }
+
+                // 4. 應用最終位置
+                tooltipElement.style.top = `${newTop}px`;
+                tooltipElement.style.left = `${newLeft}px`;
+            };
+            
+            // --- 顯示 Tooltip (帶時序控制) ---
             const showTooltip = (trigger) => {
-                clearTimeout(hideTimeout); // 如果正在計劃隱藏，則取消
+                clearTimeout(hideTimeout);
                 const content = trigger.dataset.tooltipHtml;
                 if (!content) return;
 
-                // 步驟 1: 填充內容，並讓元素進入佈局計算，但對用戶保持不可見
                 tooltipElement.innerHTML = content;
-                tooltipElement.style.visibility = 'visible'; // 讓瀏覽器開始計算尺寸
-                tooltipElement.classList.remove('is-visible'); // 確保 opacity 為 0
+                tooltipElement.style.visibility = 'visible';
+                tooltipElement.classList.remove('is-visible');
 
-                // 步驟 2: 使用 requestAnimationFrame 推遲定位操作
-                // 這會等待瀏覽器完成佈局計算，確保我們得到的是最終的、正確的尺寸
                 requestAnimationFrame(() => {
-                    // 現在，tooltipRect 的尺寸是準確的了
                     positionTooltip(trigger);
-                    // 步驟 3: 在正確的位置上，讓它淡入顯示
                     tooltipElement.classList.add('is-visible');
                 });
             };
 
-            // --- 隱藏 Tooltip (同樣變得更健壯) ---
+            // --- 隱藏 Tooltip (帶時序控制) ---
             const hideTooltip = () => {
-                // 開始淡出動畫
                 tooltipElement.classList.remove('is-visible');
-                
-                // 在 CSS 過渡動畫結束後，再將其從佈局中移除 (visibility: hidden)
-                // 這樣可以防止在動畫過程中觸發不必要的操作
                 hideTimeout = setTimeout(() => {
                     tooltipElement.style.visibility = 'hidden';
-                }, 200); // 這個時間應與 CSS 中的 transition-duration 匹配
+                }, 200); // 匹配 CSS 過渡時間
             };
 
             // --- 事件監聽器 (保持不變) ---
@@ -1443,6 +1402,9 @@
                 }
             });
         }
+
+
+
         function checkKepubifyStatus() {
             log('檢查 Kepubify 載入狀態...');
 
