@@ -38,16 +38,21 @@ Web-based tool for processing EPUB files for Kobo e-readers with series metadata
    ```bash
    # Using Python 3
    python -m http.server 8000
-   
+   ```
 
 2. **Access the application:**
    Open `http://localhost:8000` in your browser
 
 ### Credits
 
-- **Original Kepubify Project**: [pgaskin/kepubify](https://github.com/pgaskin/kepubify/)
+- **Kepubify Project**: [pgaskin/kepubify](https://github.com/pgaskin/kepubify/)
 - **NickelSeries Plugin**: [pgaskin/kepubify/ns](https://pgaskin.net/kepubify/ns/)
 - **Code**: [Kiro](https://kiro.dev/), [Gemini CLI](https://github.com/google-gemini/gemini-cli)
+
+### TODO
+
+- Auto-add cover image when OPF does not specify one
+- Add support for converting comic EPUB to CBZ
 
 ---
 
@@ -85,12 +90,18 @@ Web-based tool for processing EPUB files for Kobo e-readers with series metadata
    ```bash
    # 使用 Python 3
    python -m http.server 8000
-   
+   ```
+
 2. **訪問應用程序：**
    在瀏覽器中打開 `http://localhost:8000`
 
 ### 致謝
 
-- **原始 Kepubify 項目**：[pgaskin/kepubify](https://github.com/pgaskin/kepubify/)
+- **Kepubify 項目**：[pgaskin/kepubify](https://github.com/pgaskin/kepubify/)
 - **NickelSeries 插件**：[pgaskin/kepubify/ns](https://pgaskin.net/kepubify/ns/)
 - **Code**：[Kiro](https://kiro.dev/)、[Gemini CLI](https://github.com/google-gemini/gemini-cli)
+
+### TODO
+
+- 當 OPF 未指定封面時自動補充
+- 增加漫畫 EPUB 轉換為 CBZ 格式
